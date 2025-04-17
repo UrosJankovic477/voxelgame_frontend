@@ -7,7 +7,7 @@ import { GameCanvasComponent } from './components/game-canvas/game-canvas.compon
 
 export const routes: Routes = [
     {
-        path: 'user',
+        path: 'user/:username',
         component: UserComponent,
     },
     {

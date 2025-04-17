@@ -1,0 +1,22 @@
+.container {
+    font-size: 14pt;
+    border-radius: 5pt;
+    border-width: 2pt;
+    border-style: solid;
+    border-color: darkslategrey;
+    height: 300px;
+    width: 50%;
+    overflow-y: auto;
+}
+
+.default-text {
+    font-family:  monospace;
+    font-style: italic;
+    color: darkslategrey;
+}
+
+.text {
+    font-family: monospace;
+    font-style: normal;
+    color: black;
+}

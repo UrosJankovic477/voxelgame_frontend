@@ -1,3 +1,4 @@
 export const environment = {
-    api: 'http://localhost:3000/'
+    api: 'http://192.168.1.195:3000/',
+    defaultProfilePicture: '../../assets/default-profile-pic.jpg'
 }

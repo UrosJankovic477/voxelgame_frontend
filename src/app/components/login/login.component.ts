@@ -1,26 +1,50 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { AuthService } from '../../services/auth.service';
 import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Observable } from 'rxjs';
+import { catchError, EMPTY, Observable } from 'rxjs';
+import { Store, StoreModule } from '@ngrx/store';
+import { loginFailure, loginRequest, loginSuccess } from '../../store/auth.actions';
+import { AuthEffects } from '../../store/auth.effects';
+import { CommonModule, NgIf } from '@angular/common';
+import { AppState } from '../../store/app-state';
+import { User } from '../../models/user.model';
+import { authReducer } from '../../store/auth.reducer';
+import { selectLoginErrorMessage, selectLoginToken } from '../../store/auth.selectors';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, CommonModule, StoreModule],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
 
   constructor(
-    private authService: AuthService,
+    private store: Store<AppState>,
     private formBuilder: FormBuilder
   ) {
 
   }
 
-  loginResult$?: Observable<Object>
+  ngOnInit(): void {
+    this.store.subscribe();
+    this.token$ = this.store.select(selectLoginToken);
+    this.errorMessage$ = this.store.select(selectLoginErrorMessage);
+    this.token$.subscribe((token) => {
+      this.token = token;
+    });
+    this.errorMessage$.subscribe((errorMessage) => {
+      this.errorMessage = errorMessage;
+    });
+  }
 
+  token$: Observable<string | null> = EMPTY;
+  errorMessage$: Observable<string | undefined> = EMPTY;
+
+  token: string | null = null;
+  errorMessage?: string;
+  
   loginForm = this.formBuilder.group({
     username: new FormControl('', [
       Validators.required
@@ -32,13 +56,16 @@ export class LoginComponent {
 
   onSubmit(): void {
     if (this.loginForm.valid) {
-      this.loginResult$ = this.authService.login(this.loginForm.value.username!, this.loginForm.value.password!);
-      this.loginResult$.subscribe((loginResult) => {
-        
-        
-      })
-      
+      this.store.dispatch(loginRequest({
+        username: this.loginForm.value.username!, password: this.loginForm.value.password!
+      }));
     }
+    else {
+      this.store.dispatch(loginFailure({ errorMessage: 'Type username and password.' }));
+    }
+    console.log(this.errorMessage);
+    
+    
   }
  
 }
