@@ -16,20 +16,24 @@ export class Mesh {
 
 
     public getVertexArrayBuffer(): ArrayBuffer {
-        const buffer = new ArrayBuffer(this.vertices.length * 20);
+        const buffer = new ArrayBuffer(this.vertices.length * 28);
         const asUint8 = new Uint8Array(buffer);
         const asFloat32 = new Float32Array(buffer);
 
         this.vertices.forEach((vertex, i) => {
             // map position
-            asFloat32[4 * i] = vertex.position[0];
-            asFloat32[4 * i + 1] = vertex.position[1];
-            asFloat32[4 * i + 2] = vertex.position[2];
-            //map color
-            asUint8[16 * i + 12] = vertex.color[0];
-            asUint8[16 * i + 13] = vertex.color[1];
-            asUint8[16 * i + 14] = vertex.color[2];
-            asUint8[16 * i + 15] = vertex.color[3];
+            asFloat32[7 * i] = vertex.position[0];
+            asFloat32[7 * i + 1] = vertex.position[1];
+            asFloat32[7 * i + 2] = vertex.position[2];
+            // map normals
+            asFloat32[7 * i + 3] = vertex.normal[0];
+            asFloat32[7 * i + 4] = vertex.normal[1];
+            asFloat32[7 * i + 5] = vertex.normal[2];
+            // map color
+            asUint8[28 * i + 24] = vertex.color[0];
+            asUint8[28 * i + 25] = vertex.color[1];
+            asUint8[28 * i + 26] = vertex.color[2];
+            asUint8[28 * i + 27] = vertex.color[3];
         })
         
         return buffer;
@@ -40,9 +44,12 @@ export class Mesh {
         gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
         gl.enableVertexAttribArray(0);
         gl.enableVertexAttribArray(1);
+        gl.enableVertexAttribArray(2);
         gl.drawArrays(mode, 0, this.vertices.length);
+        gl.clear(gl.DEPTH_BUFFER_BIT);
         gl.disableVertexAttribArray(0);
         gl.disableVertexAttribArray(1);
+        gl.disableVertexAttribArray(2);
         gl.bindBuffer(gl.ARRAY_BUFFER, null);
         gl.bindVertexArray(null);
     }
@@ -53,13 +60,16 @@ export class Mesh {
 
         gl.enableVertexAttribArray(0);
         gl.enableVertexAttribArray(1);
-        gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 16, 0);
-        gl.vertexAttribPointer(1, 4, gl.UNSIGNED_BYTE, true, 16, 12);
+        gl.enableVertexAttribArray(2);
+        gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 28, 0);
+        gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 28, 12);
+        gl.vertexAttribPointer(2, 4, gl.UNSIGNED_BYTE, true, 28, 24);
 
         gl.bufferData(gl.ARRAY_BUFFER, this.getVertexArrayBuffer(), gl.STATIC_DRAW);
         
         gl.disableVertexAttribArray(0);
         gl.disableVertexAttribArray(1);
+        gl.disableVertexAttribArray(2);
         gl.bindBuffer(gl.ARRAY_BUFFER, null);
         gl.bindVertexArray(null);
     }
@@ -88,8 +98,9 @@ export class Mesh {
         const vertices: Array<Vertex> = new Array<Vertex>((width + 1) * 4);
         for (let i: number = 0; i < vertices.length; i++) {
             vertices[i] = {
+                position: positions[i],
+                normal: vec3.fromValues(0, 1, 0),
                 color: colors[i],
-                position: positions[i]
             };
         }
 

@@ -1,4 +1,4 @@
-import { mat4, vec2, vec3 } from "gl-matrix";
+import { mat4, vec2, vec3, vec4 } from "gl-matrix";
 import { Camera } from "./camera.model";
 import { Scene } from "./scene.model";
 import { Mesh } from "./mesh.model";
@@ -6,6 +6,7 @@ import { vertexShader } from '../../shaders/vertex.shader';
 import { fragmentShader } from '../../shaders/fragment.shader';
 import { SceneOptions } from "./scene-options.model";
 import rgba from "color-rgba";
+import { CollisionData } from "./octree.model";
 
 export class Renderer {
   constructor(
@@ -21,8 +22,10 @@ export class Renderer {
     if (backgroundColor === undefined || backgroundColor.length == 0) {
       backgroundColor = [0, 0, 0, 1];
     }
+    this.gl.enable(this.gl.CULL_FACE);
+    this.gl.enable(this.gl.DEPTH_TEST);
     this.gl.clearColor(...backgroundColor);
-    this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+    this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
     this.vertexShader = this.loadShader(this.gl.VERTEX_SHADER, vertexShader);
     this.fragmentShader = this.loadShader(this.gl.FRAGMENT_SHADER, fragmentShader);
     this.program = this.gl.createProgram();
@@ -87,7 +90,7 @@ export class Renderer {
     this.gl!.viewport(0, 0, this.canvas!.width, this.canvas!.height);
     mat4.ortho(this.projectuonMatrix, 0, this.canvas!.width, 0, this.canvas!.height, 1000, -1000);
     this.gl!.uniformMatrix4fv(this.projectionMatrixUniformLocation, false, this.projectuonMatrix);
-    this.gl!.clear(this.gl!.COLOR_BUFFER_BIT);
+    this.gl!.clear(this.gl!.COLOR_BUFFER_BIT | this.gl!.DEPTH_BUFFER_BIT);
     this.scene!.render(this.gl!);
   }
 
@@ -111,5 +114,77 @@ export class Renderer {
 
   public loadScene() {
     this.scene?.load(this.gl!);
+  }
+
+  public testCollision(cursorX: number, cursorY: number) {
+
+    /**
+     * convert cursor coords to world
+     */
+    
+    const start = vec4.fromValues(cursorX, cursorY, 4096, 1);
+    const end = vec4.fromValues(cursorX, cursorY, 4096 - 1, 1);
+
+    const rotation = mat4.create();
+    mat4.fromYRotation(rotation, Math.PI);
+
+    //mat4.invert(transform, this.scene!.camera.transformMatrix);
+
+    const transform = this.scene!.camera.inverseTransform;
+
+    vec4.transformMat4(start, start, transform);
+    vec4.transformMat4(end, end, transform);
+    
+    vec4.mul(start, start, [-1, 1, -1, 1]);
+    vec4.mul(end, end, [-1, 1, -1, 1]);
+
+    vec4.transformMat4(start, start, rotation);
+    vec4.transformMat4(end, end, rotation);
+
+    const delta = vec4.create();
+
+    vec4.sub(delta, end, start);
+    
+    const collisionData = this.testCollisionSculpture(start, delta);
+
+    if (!collisionData.collision) {
+      return this.testCollisionGrid(start, delta);
+    }
+    else {
+      return collisionData;
+    }
+    
+  }
+
+  private testCollisionSculpture(start: vec4, delta: vec4) {
+    const sculpture = this.scene?.sculpture;
+    return sculpture!.data!.testCollision(start, delta);
+  }
+
+  private testCollisionGrid(start: vec4, delta: vec4): CollisionData {
+    /**
+     * line(t) = start + delta * t
+     * line crosses plane y = 0 at t = -start.y / end.y
+     */
+    const t = -start[1] / delta[1];
+    const intersection = vec4.create(); // point of intersection with the y = 0 plane
+    vec4.scaleAndAdd(intersection, start, delta, t);
+    vec4.add(intersection, intersection, [Number.EPSILON * 100, Number.EPSILON * 100, Number.EPSILON * 100, 0]);
+    return {
+      collision: true,
+      delta,
+      intersection,
+      t
+    };
+  }
+
+  public changeBlock(position: vec3, color: vec4 | null) {
+    if (color) {
+      this.scene?.sculpture?.placeBlock(position, color);
+    }
+    else {
+      this.scene?.sculpture?.removeBlock(position);
+    }
+    this.render();
   }
 }

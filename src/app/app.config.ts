@@ -5,10 +5,11 @@ import { routes } from './app.routes';
 import { provideHttpClient, withFetch } from '@angular/common/http';
 import { provideState, provideStore } from '@ngrx/store';
 import { provideEffects } from '@ngrx/effects';
-import { loginRequest } from './store/auth.actions';
-import { AuthEffects } from './store/auth.effects';
-import { authReducer } from './store/auth.reducer';
+import { loginRequest } from './store/auth/auth.actions';
+import { authReducer } from './store/auth/auth.reducer';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
+import { AuthEffects } from './store/auth/auth.effects';
+import { colorReducer } from './store/color/color.reducer';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -17,6 +18,7 @@ export const appConfig: ApplicationConfig = {
     provideEffects([AuthEffects]),
     provideStore(),
     provideState({ name: 'loginState', reducer: authReducer }),
+    provideState({ name: 'colorState', reducer: colorReducer }),
     provideStoreDevtools({
       maxAge: 25, // Retains last 25 states
       logOnly: !isDevMode(), // Restrict extension to log-only mode

@@ -3,7 +3,7 @@ import { Store, StoreModule } from '@ngrx/store';
 import { AppState } from '../../store/app-state';
 import { User } from '../../models/user.model';
 import { EMPTY, Observable } from 'rxjs';
-import { selectLoginUser } from '../../store/auth.selectors';
+import { selectLoginUser } from '../../store/auth/auth.selectors';
 import { CommonModule } from '@angular/common';
 import { environment } from '../../../../environment';
 import { RouterModule } from '@angular/router';
