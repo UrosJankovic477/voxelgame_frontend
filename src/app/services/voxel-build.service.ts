@@ -14,4 +14,13 @@ export class VoxelBuildService {
   public getVoxelBuilds(): Observable<VoxelBuild[]> {
     return this.client.get<VoxelBuild[]>(`${environment.api}voxel-build`);
   }
+
+  public postVoxelBuild(post: VoxelBuild, token: string) {
+    return this.client.post<string>(`${environment.api}voxel-build`, post, {
+      headers:
+      {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+  }
 }

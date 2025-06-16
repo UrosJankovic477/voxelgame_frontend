@@ -9,16 +9,21 @@ import { loginRequest } from './store/auth/auth.actions';
 import { authReducer } from './store/auth/auth.reducer';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
 import { AuthEffects } from './store/auth/auth.effects';
-import { colorReducer } from './store/color/color.reducer';
+import { metaReducers } from './store/app.meta-reducers';
+import { initialState } from './store/app.state';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes, withComponentInputBinding()),
     provideHttpClient(withFetch(),),
     provideEffects([AuthEffects]),
-    provideStore(),
-    provideState({ name: 'loginState', reducer: authReducer }),
-    provideState({ name: 'colorState', reducer: colorReducer }),
+    provideStore({
+      authState: authReducer,
+    }, {
+      initialState,
+      metaReducers,
+    }),
+    provideState({ name: 'authState', reducer: authReducer }),
     provideStoreDevtools({
       maxAge: 25, // Retains last 25 states
       logOnly: !isDevMode(), // Restrict extension to log-only mode

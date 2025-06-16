@@ -1,5 +1,5 @@
 export interface SceneOptions {
     backgroundColor?: [number, number, number, number] | string,
-    gridWidth?: number,
+    size?: number,
     gridColor?: [number, number, number, number] | string,
 }

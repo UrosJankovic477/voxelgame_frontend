@@ -17,10 +17,19 @@ export class UserService {
   }
 
   public getUsersLike(term: string) {
-    this.client.get(`${environment.api}user/?name=${term}`);
+    return this.client.get(`${environment.api}user/?name=${term}`);
   }
 
-  public editUser(user: UserDto) {
-    
+  public editUser(user: UserDto, token: string) {
+    return this.client.put(`${environment.api}user`, user, {
+      headers:
+      {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+  }
+
+  public createUser(user: UserDto) {
+    return this.client.post(`${environment.api}/signup`, user);
   }
 }

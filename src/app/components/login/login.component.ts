@@ -6,7 +6,7 @@ import { Store, StoreModule } from '@ngrx/store';
 import { loginFailure, loginRequest, loginSuccess } from '../../store/auth/auth.actions';
 import { AuthEffects } from '../../store/auth/auth.effects';
 import { CommonModule, NgIf } from '@angular/common';
-import { AppState } from '../../store/app-state';
+import { AppState } from '../../store/app.state';
 import { User } from '../../models/user.model';
 import { authReducer } from '../../store/auth/auth.reducer';
 import { selectLoginErrorMessage, selectLoginToken } from '../../store/auth/auth.selectors';

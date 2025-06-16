@@ -6,9 +6,11 @@ import { Camera } from '../../models/webgl-models/camera.model';
 import rgba from 'color-rgba';
 import { Renderer } from '../../models/webgl-models/renderer.model';
 import { EMPTY, empty, filter, from, fromEvent, groupBy, GroupedObservable, iif, interval, map, merge, mergeMap, mergeScan, Observable, partition, skipWhile, switchMap, takeUntil, zip } from 'rxjs';
-import { AppState } from '../../store/app-state';
+import { AppState } from '../../store/app.state';
 import { Store } from '@ngrx/store';
 import { ColorPickerComponent } from "../color-picker/color-picker.component";
+import { VoxelBuildService } from '../../services/voxel-build.service';
+import { RouterModule } from '@angular/router';
 
 
 // refactor: separate render related code from component class
@@ -16,7 +18,7 @@ import { ColorPickerComponent } from "../color-picker/color-picker.component";
 @Component({
   selector: 'app-game-canvas',
   standalone: true,
-  imports: [ColorPickerComponent],
+  imports: [ColorPickerComponent, RouterModule],
   templateUrl: './game-canvas.component.html',
   styleUrl: './game-canvas.component.css'
 })
@@ -24,6 +26,7 @@ export class GameCanvasComponent implements OnInit {
 
   constructor(
     private client: HttpClient,
+    private voxelBuildService: VoxelBuildService,
     private store: Store<AppState>
   ) { }
 
@@ -38,6 +41,10 @@ export class GameCanvasComponent implements OnInit {
   clickEvent$?: Observable<MouseEvent>;
 
   color: vec4 = vec4.fromValues(0, 0, 0, 255);
+
+  saveScene() {
+    this.renderer?.saveScene();
+  }
 
   ngOnInit(): void {
     this.canvas = document.querySelector('#c');
@@ -144,12 +151,10 @@ export class GameCanvasComponent implements OnInit {
         );
       }), 
     ).subscribe(angles => this.renderer?.rotateCamera(angles[0], angles[1]));
-
-    
     
     this.renderer = new Renderer(this.canvas, {
       backgroundColor: 'DeepSkyBlue',
-      gridWidth: 16,
+      size: 16,
       gridColor: 'RosyBrown'
     });
     this.renderer.loadScene();

@@ -29,16 +29,4 @@ export class AuthEffects {
             
         );
     });
-
-    //public loginSuccess$ = createEffect(() => {
-    //    return this.actions$.pipe(
-    //        ofType(loginSuccess)
-    //    )
-    //});
-//
-    //public loginFailure$ = createEffect(() => {
-    //    return this.actions$.pipe(
-    //        ofType(loginFailure)
-    //    )
-    //});
 }

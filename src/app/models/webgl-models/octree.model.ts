@@ -28,16 +28,47 @@ export type CollisionData = {
 }
 
 export class Octree {
-    constructor(private _size: number) {
+    private constructor(private _size: number) {
         this._depth = Math.log2(_size);
         this.offset = vec3.fromValues(
             -_size / 2,
             0,
             -_size / 2
         )
-        this.leaves = new Array<OctreeNode>(_size * _size * _size);
+        this.leaves = new Array<OctreeNode>(this._size * this._size * this._size);
+    }
+
+    private generateNodes() {
         this.root = this.createNode(this._depth, this.offset, null);
     }
+
+    public static fromParsedJson(jsonParsed: any) {
+        const octree = new Octree(jsonParsed['_size']);
+        octree.root = structuredClone(jsonParsed['root']);
+
+        function setParent(parent: OctreeNode) {
+            return (child: OctreeNode | null, index: number, children: (OctreeNode | null)[]) => {
+                children[index]!.parent = parent;
+                if (child!.leafIndex != null) {
+                    octree.leaves![child!.leafIndex] = children[index]!;
+                }
+                else {
+                    children[index]!.children.forEach(setParent(children[index]!));
+                }
+            }
+        }
+
+        octree.root?.children.forEach(setParent(octree.root!));
+
+        return octree;
+    }
+
+    public static fromSize(size: number) {
+        const octree = new Octree(size);
+        octree.generateNodes();
+        return octree;
+    }
+
 
     private createNode(level: number, position: vec3, parent: OctreeNode | null) {
         const children = new Array<OctreeNode | null>(8) as tuple8;
@@ -59,7 +90,7 @@ export class Octree {
             + offsetPosition[1] * this._size
             + offsetPosition[2] * this._size * this._size;
             node.children.fill(null);
-            this.leaves[node.leafIndex] = node;
+            this.leaves![node.leafIndex] = node;
         }
         else {
             level -= 1;
@@ -78,8 +109,8 @@ export class Octree {
         return node;
     }
 
-    private root: OctreeNode;
-    private leaves: OctreeNode[];
+    private root?: OctreeNode;
+    private leaves?: OctreeNode[];
     private _depth: number;
     private offset: vec3;
 
@@ -92,7 +123,7 @@ export class Octree {
     }
 
     public get blocks(): Readonly<{ color: vec4, state: OctreeNodeState}[]> {
-        return this.leaves.map(node => ({ color: node.color, state: node.state, parent}));
+        return this.leaves!.map(node => ({ color: node.color, state: node.state, parent}));
     }
 
     private getIndex(x: number, y: number, z: number) {
@@ -103,14 +134,14 @@ export class Octree {
         
         const index = this.getIndex(x, y, z);
         
-        if (this.leaves[index].state != OctreeNodeState.empty) {
+        if (this.leaves![index].state != OctreeNodeState.empty) {
             return;
         }
-        this.leaves[index].state = OctreeNodeState.filled;
-        vec4.copy(this.leaves[index].color, color);
+        this.leaves![index].state = OctreeNodeState.filled;
+        vec4.copy(this.leaves![index].color, color);
         let possiblyFilled = true;
         for (
-            let node = this.leaves[index].parent; 
+            let node = this.leaves![index].parent; 
             node != null; 
             node = node.parent
         ) {
@@ -134,13 +165,13 @@ export class Octree {
     
     public removeBlock(x: number, y: number, z: number) {
         const index = this.getIndex(x, y, z);
-        if (this.leaves[index].state == OctreeNodeState.empty) {
+        if (this.leaves![index].state == OctreeNodeState.empty) {
             return;
         }
-        this.leaves[index].state = OctreeNodeState.empty;
+        this.leaves![index].state = OctreeNodeState.empty;
         let possiblyEmpty = true;
         for (
-            let node = this.leaves[index].parent; 
+            let node = this.leaves![index].parent; 
             node != null; 
             node = node.parent
         ) {
@@ -201,7 +232,7 @@ export class Octree {
         };
     }
 
-    public testCollision(start: vec4, delta: vec4, node: OctreeNode = this.root): CollisionData {
+    public testCollision(start: vec4, delta: vec4, node: OctreeNode = this.root!): CollisionData {
         
         if (node.state == OctreeNodeState.empty) {
             return { collision: false };

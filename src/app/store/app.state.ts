@@ -1,13 +1,13 @@
-import { mat4, vec4 } from "gl-matrix";
+import { createReducer } from "@ngrx/store";
 import { User } from "../models/user.model";
+import { authReducer, initialAuthState } from "./auth/auth.reducer";
 
 export interface AppState {
-    loginState: LoginState,
-    rendererState: RendererState,
-    colorState: ColorState
+    authState: AuthState,
+    rendererState?: RendererState,
 };
 
-export interface LoginState {
+export interface AuthState {
     token: string | null,
     user: User | null,
     errorMessage?: string
@@ -21,15 +21,6 @@ export interface RendererState {
     programLinked: boolean,
 };
 
-export interface SculptureState {
-
-};
-
-export interface TransformState {
-    projection: mat4,
-    transform: mat4,
-};
-
-export interface ColorState {
-    color: vec4;
+export const initialState: AppState = JSON.parse(sessionStorage.getItem('state') ?? 'null') ?? {
+    authState: initialAuthState
 };

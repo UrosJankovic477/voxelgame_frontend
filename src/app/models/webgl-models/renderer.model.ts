@@ -7,6 +7,7 @@ import { fragmentShader } from '../../shaders/fragment.shader';
 import { SceneOptions } from "./scene-options.model";
 import rgba from "color-rgba";
 import { CollisionData } from "./octree.model";
+import { Sculpture } from "./sculpture.model";
 
 export class Renderer {
   constructor(
@@ -44,9 +45,15 @@ export class Renderer {
     this.gl.useProgram(this.program);
     this.modelMatrixUniformLocation = this.gl.getUniformLocation(this.program, 'modelMat');
     this.projectionMatrixUniformLocation = this.gl.getUniformLocation(this.program, 'projectionMat');
-    
-    this.scene = new Scene(this.gl, sceneOptions.gridWidth, sceneOptions.gridColor);
+    const sceneJson = sessionStorage.getItem('scene');
+    if (!!sceneJson) {
+      this.scene = Scene.fromJson(this.gl, sceneJson);
+    }
+    else {
+      this.scene = Scene.fromOptions(this.gl, sceneOptions);
+    }
     this.gl?.uniformMatrix4fv(this.modelMatrixUniformLocation, false, this.scene?.camera.transformMatrix!);
+    this.loadScene();
   }
 
   gl: WebGL2RenderingContext | null = null;
@@ -60,6 +67,16 @@ export class Renderer {
 
   modelMatrixUniformLocation: WebGLUniformLocation | null = null;
   projectionMatrixUniformLocation: WebGLUniformLocation | null = null;
+
+  saveScene() {
+    sessionStorage.setItem('scene', JSON.stringify(this.scene?.sculpture?.data, (key, value) => {
+      const ignore = new Set(['parent', 'leaves', '_depth', 'offset']);
+      if (ignore.has(key)) {
+        return null;
+      }
+      else return value;
+    }));
+  }
 
   loadShader(type: GLenum, shaderSource: string): WebGLShader {
     const shader = this.gl!.createShader(type);

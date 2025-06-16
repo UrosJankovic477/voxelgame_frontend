@@ -4,21 +4,31 @@ import { Vertex } from "./vertex.model";
 import { Octree, OctreeNode, OctreeNodeState } from "./octree.model";
 
 export class Sculpture {
-    constructor(size: number) {
-        this.size = size;
-        this.data = new Octree(size);
-
-
+    private constructor(private _size: number) {
+        
     }
 
-    size: number;
+    public static fromParsedJson(jsonParsed: any) {
+        const octree = Octree.fromParsedJson(jsonParsed);
+        const sculpture = new Sculpture(jsonParsed['_size']);
+        sculpture.dirty = true;
+        sculpture.data = octree;
+        return sculpture;
+    }
+
+    public static fromSize(size: number = 16) {
+        const sculpture = new Sculpture(size);
+        sculpture.data = Octree.fromSize(size);
+        return sculpture;
+    }
+
     data?: Octree;
     mesh?: Mesh;
     private dirty: boolean = false;
 
     reset() {
         delete this.data;
-        this.data = new Octree(this.size);
+        this.data = Octree.fromSize(this._size);
         delete this.mesh;
     }
 
@@ -90,9 +100,9 @@ export class Sculpture {
                         position, 
                         cubeVertex.position, 
                         [
-                            block.index % this.size - this.size / 2, 
-                            Math.floor(block.index / this.size) % this.size, 
-                            Math.floor(block.index / (this.size * this.size)) - this.size / 2
+                            block.index % this._size - this._size / 2, 
+                            Math.floor(block.index / this._size) % this._size, 
+                            Math.floor(block.index / (this._size * this._size)) - this._size / 2
                         ]),
                     color: block.color!,
                     normal: cubeVertex.normal
@@ -108,13 +118,13 @@ export class Sculpture {
     }
 
     public placeBlock(position: vec3, color: vec4) {
-        vec3.add(position, position, [this.size / 2, 0, this.size / 2]);
+        vec3.add(position, position, [this._size / 2, 0, this._size / 2]);
         this.data!.placeBlock(position[0], position[1], position[2], color);
         this.dirty = true;
     }
 
     public removeBlock(position: vec3) {
-        vec3.add(position, position, [this.size / 2, 0, this.size / 2]);
+        vec3.add(position, position, [this._size / 2, 0, this._size / 2]);
         this.data!.removeBlock(position[0], position[1], position[2]);
         this.dirty = true;
     }

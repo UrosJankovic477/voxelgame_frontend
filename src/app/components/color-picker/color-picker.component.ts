@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { AppState } from '../../store/app-state';
+import { AppState } from '../../store/app.state';
 import { vec4 } from 'gl-matrix';
 import { EMPTY, Observable } from 'rxjs';
 import rgba from 'color-rgba';

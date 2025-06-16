@@ -1,0 +1,31 @@
+<input type="file" class="file-input"
+       (change)="onFileSelected($event)" #fileUpload>
+
+<div class="file-upload">
+
+   {{this.file?.name || "No file uploaded yet."}}
+
+    <button mat-mini-fab color="primary" class="upload-btn" (click)="fileUpload.click()">
+    </button>
+
+  <form [formGroup]="editUserForm" (ngSubmit)="onSubmit()">
+       <div>
+          <label for="displayname">
+            Display Name: 
+          </label>
+          <input id="displayname" type="text" formControlName="displayname">
+        </div>
+   
+        <div>
+          <label for="about">
+              About:
+          </label>
+          <br/>
+          <textarea id="about" type="about" formControlName="about"></textarea>
+        </div>
+   
+       <button class="button" type="submit">save changes</button>
+   
+   </form>
+
+</div>
