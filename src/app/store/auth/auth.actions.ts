@@ -22,3 +22,15 @@ export const loginFailure = createAction(
 );
 
 export const logout = createAction('[Auth] Logout');
+
+export const loggedInUserUpdateRequest = createAction('[Auth] Logged In User Update Request');
+
+export const loggedInUserUpdateSucces = createAction(
+    '[Auth] Logged In User Update Success',
+    props<User>()
+);
+
+export const loggedInUserUpdateFailure = createAction(
+    '[Auth] Logged In User Update Failure',
+    props<{ errorMessage: string }>()
+);

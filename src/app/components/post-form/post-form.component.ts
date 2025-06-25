@@ -7,7 +7,9 @@ import { UploadService } from '../../services/upload.service';
 import { AppState } from '../../store/app.state';
 import { VoxelBuildService } from '../../services/voxel-build.service';
 import { selectLoginUser, selectLoginToken } from '../../store/auth/auth.selectors';
-import { EMPTY, Observable } from 'rxjs';
+import { catchError, EMPTY, first, iif, map, Observable, of, switchMap, throwIfEmpty, withLatestFrom } from 'rxjs';
+import { selectSceneActive } from '../../store/scene/scene.selector';
+import { EMPTY_OBSERVER } from 'rxjs/internal/Subscriber';
 
 @Component({
   selector: 'app-post-form',
@@ -37,25 +39,34 @@ export class PostFormComponent implements OnInit {
   ngOnInit(): void {
     this.store.subscribe();
     this.token$ = this.store.select(selectLoginToken);
-    this.token$.subscribe((token) => {
-      this.token = token;
-    });
   }
 
   onSubmit() {
     if (!this.postForm.valid) {
       throw new Error('Post form is invalid');
     }
-    const dataJson = sessionStorage.getItem('scene');
-    if (dataJson == null) {
-      throw new Error('No post to save');
-    }
-    this.voxelBuildService.postVoxelBuild({
-      description: this.postForm.value.description,
-      title: this.postForm.value.title!
-    }, this.token!).subscribe(uuid => {
-      const file = new File([dataJson], uuid);
-      this.uploadService.upload(file).subscribe();
-    });
+    this.store.select(selectSceneActive).pipe(
+      withLatestFrom(this.token$),
+      switchMap(([sceneJson, token]) => iif(() =>
+        sceneJson === null,
+        EMPTY,
+        this.voxelBuildService.postVoxelBuild({
+          title: this.postForm.value.title ?? 'New Build',
+          description: this.postForm.value.description ?? 'No description',
+        }, token!).pipe(
+          first(),
+          switchMap(postUuid => this.uploadService.uploadPost(new File([sceneJson!], postUuid), token!))
+        )
+      )),
+      throwIfEmpty(() => 'No post to save'),
+    ).subscribe({
+      next() {
+        console.log('Build was posted');
+      },
+      error(err: Error) {
+        console.error(`Failed to post build. ${err.message}`);
+      }
+      
+    })
   }
 }

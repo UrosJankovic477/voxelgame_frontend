@@ -1,3 +1,7 @@
-<h1 class="text">{{userDisplayname}}</h1>
-<img [src]="userPictureLocation">
-<div [class]="userAboutClassList" >{{userAbout}}</div>   
+<div *ngIf="user$ | async as user">
+    <h1 class="text">{{user.displayname}}</h1>
+    <img [src]="!!user.profilePictureLocation 
+    ? api + user.profilePictureLocation 
+    : defaultPictureLocation">
+    <div [class]="['container', 'text']" >{{user.about}}</div>   
+</div>

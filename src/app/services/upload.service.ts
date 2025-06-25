@@ -10,10 +10,26 @@ export class UploadService {
 
   constructor(private client: HttpClient) { }
 
-  public upload(file: File): Observable<string> {
+  public uploadImage(file: File, token: string) {
     const formData = new FormData();
     formData.append('file', file)
-    return this.client.post<string>(`${environment.api}upload`, formData);
+    return this.client.post(`${environment.api}upload/image`, formData, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      responseType: 'text',
+    });
+  }
+
+  public uploadPost(file: File, token: string) {
+    const formData = new FormData();
+    formData.append('file', file)
+    return this.client.post(`${environment.api}upload/post`, formData, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      responseType: 'text',
+    });
   }
 
 }

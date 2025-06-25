@@ -16,11 +16,16 @@ export class VoxelBuildService {
   }
 
   public postVoxelBuild(post: VoxelBuild, token: string) {
-    return this.client.post<string>(`${environment.api}voxel-build`, post, {
+    return this.client.post(`${environment.api}voxel-build`, post, {
       headers:
       {
         'Authorization': `Bearer ${token}`
-      }
+      },
+      responseType: 'text'
     });
+  }
+
+  public getVoxelBuild(uuid: string) {
+    return this.client.get(`${environment.api}voxel-build${uuid}`);
   }
 }

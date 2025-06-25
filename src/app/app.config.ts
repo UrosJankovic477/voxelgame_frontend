@@ -11,6 +11,7 @@ import { provideStoreDevtools } from '@ngrx/store-devtools';
 import { AuthEffects } from './store/auth/auth.effects';
 import { metaReducers } from './store/app.meta-reducers';
 import { initialState } from './store/app.state';
+import { sceneReducer } from './store/scene/scene.reducer';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -24,6 +25,7 @@ export const appConfig: ApplicationConfig = {
       metaReducers,
     }),
     provideState({ name: 'authState', reducer: authReducer }),
+    provideState({ name: 'sceneState', reducer: sceneReducer }),
     provideStoreDevtools({
       maxAge: 25, // Retains last 25 states
       logOnly: !isDevMode(), // Restrict extension to log-only mode

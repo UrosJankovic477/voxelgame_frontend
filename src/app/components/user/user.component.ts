@@ -1,5 +1,5 @@
 import { Component, Input, OnInit, Output } from '@angular/core';
-import { Observable } from 'rxjs';
+import { filter, map, Observable, switchMap } from 'rxjs';
 import { UserService } from '../../services/user.service';
 import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -30,14 +30,29 @@ export class UserComponent implements OnInit {
   public get userAboutClassList() : Array<string> {
     return (this.user && this.user.about) ? ['container', 'text'] : ['container', 'default-text'];
   }
+
+  public get api() {
+    return environment.api;
+  }
   
+  public get defaultPictureLocation() {
+    return environment.defaultProfilePicture;
+  }
 
   public get userDisplayname() {
     return (this.user && this.user.displayname) ? this.user.displayname : '';
   }
 
-  public get userPictureLocation() : string {
-    return (this.user && this.user.pictureLocation) ? this.user.pictureLocation : environment.defaultProfilePicture;
+  public get userPictureLocation() {
+
+    return this.user$!.pipe(
+      map(user => {
+        if (!user || !user.profilePictureLocation) {
+          return environment.defaultProfilePicture;
+        }
+        else return `${environment.api}${user.profilePictureLocation}`;
+      })
+    );
   }
   
   public get userAbout() : string {
@@ -50,8 +65,9 @@ export class UserComponent implements OnInit {
     if (username === null) {
       throw new Error('No username given');
     }
+
     this.user$ = this.service.getUser(username);
-    this.user$.subscribe(user => this.user = user);
+    
   }
 
 }

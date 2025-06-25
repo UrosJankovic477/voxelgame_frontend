@@ -152,10 +152,11 @@ export class GameCanvasComponent implements OnInit {
       }), 
     ).subscribe(angles => this.renderer?.rotateCamera(angles[0], angles[1]));
     
-    this.renderer = new Renderer(this.canvas, {
+    this.renderer = new Renderer(this.canvas, this.store, {
       backgroundColor: 'DeepSkyBlue',
       size: 16,
-      gridColor: 'RosyBrown'
+      gridColor: 'RosyBrown',
+      viewOnly: false
     });
     this.renderer.loadScene();
     this.renderer.render();

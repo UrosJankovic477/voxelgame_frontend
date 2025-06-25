@@ -1,6 +1,13 @@
 <div class="navigation">
     <button class="button" routerLink="/game-canvas">Play</button>
-    <div *ngIf="this.user; else elseBlock"><button class="button" [routerLink]="this.userRoute"><img class="profilePic" [src]="this.userPictureLocation">{{this.user.displayname}}</button></div>
+    <div *ngIf="user$ | async as user; else elseBlock">
+        <button class="button" [routerLink]="'user/' + user.username">
+            <img [src]="!!user.profilePictureLocation 
+            ? api + user.profilePictureLocation 
+            : defaultPictureLocation">
+            {{user.displayname}}
+        </button>
+    </div>
     <ng-template #elseBlock><button class="button" routerLink="/login">Sign in</button></ng-template>
 
 </div>

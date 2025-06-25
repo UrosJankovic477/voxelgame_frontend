@@ -20,22 +20,19 @@ export class NavigationComponent implements OnInit {
   constructor(private store: Store<AppState>) {
 
   }
-
-  user: User | null = null;
+  
   user$: Observable<User | null> = EMPTY;
 
   ngOnInit(): void {
     this.user$ = this.store.select(selectLoginUser);
-    this.user$.subscribe(user => this.user = user);
   }
 
-  public get userPictureLocation() : string {
-    return (this.user && this.user.pictureLocation) ? this.user.pictureLocation : environment.defaultProfilePicture;
+  public get api() {
+    return environment.api;
   }
-
   
-  public get userRoute() : string {
-    return (this.user && this.user.username) ? `/user/${this.user.username}` : '/not-found';
+  public get defaultPictureLocation() {
+    return environment.defaultProfilePicture;
   }
   
 }

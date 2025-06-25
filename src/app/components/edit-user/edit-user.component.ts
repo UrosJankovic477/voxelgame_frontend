@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Store, StoreModule } from '@ngrx/store';
 import { AppState } from '../../store/app.state';
-import { Observable, EMPTY } from 'rxjs';
+import { Observable, EMPTY, Subscription, combineLatest, map, iif, of, last, switchMap, first } from 'rxjs';
 import { loginRequest, loginFailure } from '../../store/auth/auth.actions';
 import { selectLoginToken, selectLoginUser } from '../../store/auth/auth.selectors';
 import { User } from '../../models/user.model';
@@ -31,20 +31,12 @@ export class EditUserComponent implements OnInit {
 
   user$: Observable<User | null> = EMPTY;
   token$: Observable<string | null> = EMPTY;
-  user: User | null = null;
-  token: string | null = null;
   file: File | null = null;
 
   ngOnInit(): void {
     this.store.subscribe();
     this.user$ = this.store.select(selectLoginUser);
-    this.user$.subscribe((user) => {
-      this.user = user;
-    });
     this.token$ = this.store.select(selectLoginToken);
-    this.token$.subscribe((token) => {
-      this.token = token;
-    });
   }
 
   public get userPictureLocation() : string {
@@ -52,10 +44,8 @@ export class EditUserComponent implements OnInit {
   }
 
   editUserForm = this.formBuilder.group({
-    displayname: new FormControl(this.user?.displayname, [
-    ]),
-    about: new FormControl(this.user?.about, [
-    ]),
+    displayname: new FormControl(),
+    about: new FormControl(),
   });
 
   onFileSelected(event: Event) {
@@ -64,24 +54,22 @@ export class EditUserComponent implements OnInit {
     
   }
 
-  onSubmit(): void {
-    let filename: string | null = null;
-    if (this.file) {
-      console.log("profile pic changed");
-      this.file.bytes().then(bytes => {
-        const uploadFile = new File([bytes], uuidV6())
-        this.uploadService.upload(uploadFile);
-        filename = uploadFile.name;
-      })
+  async onSubmit(): Promise<void> {
+    if (!this.editUserForm.valid) {
+      throw new Error('Invalid form.');
     }
 
-    if (this.editUserForm.valid) {
-      this.userService.editUser({
-        about: this.editUserForm.value.about ?? this.user?.about,
-        displayname: this.editUserForm.value.displayname ?? this.user?.displayname,
-        profilePictureLocation: filename ?? this.user?.pictureLocation,
-      }, this.token!).subscribe();
-    }
-    
+    combineLatest([this.token$, this.user$]).pipe(
+      switchMap(([token, user]) => iif(() => this.file !== null, 
+      combineLatest([this.token$, this.user$, this.uploadService.uploadImage(this.file!, token!)]),
+      combineLatest([this.token$, this.user$, of(user?.profilePictureLocation)])).pipe(
+        switchMap(([token, user, profilePictureLocation]) => this.userService.editUser({
+          displayname: this.editUserForm.value.displayname ?? user?.displayname,
+          about: this.editUserForm.value.about ?? user?.about,
+          profilePictureLocation
+        }, token!))
+      )),
+      first()
+    ).subscribe();
   }
 }

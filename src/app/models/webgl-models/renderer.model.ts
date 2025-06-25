@@ -8,10 +8,15 @@ import { SceneOptions } from "./scene-options.model";
 import rgba from "color-rgba";
 import { CollisionData } from "./octree.model";
 import { Sculpture } from "./sculpture.model";
+import { Store } from "@ngrx/store";
+import { AppState } from "../../store/app.state";
+import { selectSceneActive, selectSceneViewOnly } from "../../store/scene/scene.selector";
+import { sceneSave } from "../../store/scene/scene.actions";
 
 export class Renderer {
   constructor(
       private canvas: HTMLCanvasElement,
+      private store: Store<AppState>,
       sceneOptions: SceneOptions 
   ) {
 
@@ -45,13 +50,25 @@ export class Renderer {
     this.gl.useProgram(this.program);
     this.modelMatrixUniformLocation = this.gl.getUniformLocation(this.program, 'modelMat');
     this.projectionMatrixUniformLocation = this.gl.getUniformLocation(this.program, 'projectionMat');
-    const sceneJson = sessionStorage.getItem('scene');
-    if (!!sceneJson) {
-      this.scene = Scene.fromJson(this.gl, sceneJson);
+    
+    let sceneJson$;
+    if (sceneOptions.viewOnly) {
+      sceneJson$ = store.select(selectSceneViewOnly);
     }
     else {
-      this.scene = Scene.fromOptions(this.gl, sceneOptions);
+      sceneJson$ = store.select(selectSceneActive);
     }
+
+    sceneJson$.subscribe(sceneJson => {
+      if (sceneJson !== null) {
+        this.scene = Scene.fromJson(this.gl!, sceneJson);
+      }
+      else {
+        this.scene = Scene.fromOptions(this.gl!, sceneOptions);
+      }
+    });
+
+    
     this.gl?.uniformMatrix4fv(this.modelMatrixUniformLocation, false, this.scene?.camera.transformMatrix!);
     this.loadScene();
   }
@@ -69,13 +86,15 @@ export class Renderer {
   projectionMatrixUniformLocation: WebGLUniformLocation | null = null;
 
   saveScene() {
-    sessionStorage.setItem('scene', JSON.stringify(this.scene?.sculpture?.data, (key, value) => {
+    const octree = this.scene?.sculpture?.data;
+    const sceneJson = JSON.stringify(octree, (key, value) => {
       const ignore = new Set(['parent', 'leaves', '_depth', 'offset']);
       if (ignore.has(key)) {
         return null;
       }
       else return value;
-    }));
+  });
+    this.store.dispatch(sceneSave({ sceneJson }));
   }
 
   loadShader(type: GLenum, shaderSource: string): WebGLShader {

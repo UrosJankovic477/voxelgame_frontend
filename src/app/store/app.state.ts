@@ -1,10 +1,11 @@
 import { createReducer } from "@ngrx/store";
 import { User } from "../models/user.model";
 import { authReducer, initialAuthState } from "./auth/auth.reducer";
+import { Octree } from "../models/webgl-models/octree.model";
 
 export interface AppState {
     authState: AuthState,
-    rendererState?: RendererState,
+    sceneState: SceneState
 };
 
 export interface AuthState {
@@ -13,12 +14,9 @@ export interface AuthState {
     errorMessage?: string
 };
 
-export interface RendererState {
-    gl: WebGL2RenderingContext,
-    vertexShader: WebGLShader,
-    fragmentShader: WebGLShader,
-    program: WebGLProgram,
-    programLinked: boolean,
+export interface SceneState {
+    activeSceneJson: string | null;
+    viewOnlySceneJson: string | null;
 };
 
 export const initialState: AppState = JSON.parse(sessionStorage.getItem('state') ?? 'null') ?? {
