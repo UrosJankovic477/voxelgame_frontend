@@ -1,7 +1,7 @@
 import { vec3, vec4 } from "gl-matrix";
-import { Mesh } from "./mesh.model";
-import { Vertex } from "./vertex.model";
-import { Octree, OctreeNode, OctreeNodeState } from "./octree.model";
+import { Mesh } from "./mesh";
+import { Vertex } from "./vertex";
+import { Octree, OctreeNode, OctreeNodeState } from "./octree";
 
 export class Sculpture {
     private constructor(private _size: number) {

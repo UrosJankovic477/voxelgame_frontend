@@ -1,8 +1,8 @@
 import { vec3, vec4 } from "gl-matrix";
-import { Camera } from "./camera.model";
-import { Mesh } from "./mesh.model";
-import { Sculpture } from "./sculpture.model";
-import { SceneOptions } from "./scene-options.model";
+import { Camera } from "./camera";
+import { Mesh } from "./mesh";
+import { Sculpture } from "./sculpture";
+import { SceneOptions } from "./scene-options";
 
 export class Scene {
     private constructor(gl: WebGL2RenderingContext, size: number = 16, gridColor: string | [number, number, number, number] = 'CadetBlue') {

@@ -6,8 +6,9 @@ import { SignUpComponent } from './components/sign-up/sign-up.component';
 import { GameCanvasComponent } from './components/game-canvas/game-canvas.component';
 import { EditUserComponent } from './components/edit-user/edit-user.component';
 import { userAuthGuard } from './guards/user-auth.guard';
-import { PostFormComponent } from './components/post-form/post-form.component';
+import { PostFormComponent as PostSaveFormComponent } from './components/post-save-form/post-save-form.component';
 import { PostComponent } from './components/post/post.component';
+import { PostsComponent } from './components/posts/posts.component';
 
 export const routes: Routes = [
     {
@@ -21,13 +22,17 @@ export const routes: Routes = [
         component: EditUserComponent,
     },
     {
-        path: 'post/:uuid',
+        path: 'posts/:uuid',
         component: PostComponent,
     },
     {
-        path: 'post-form',
+        path: 'posts',
+        component: PostsComponent,
+    },
+    {
+        path: 'post-save-form',
         canActivate: [userAuthGuard],
-        component: PostFormComponent,
+        component: PostSaveFormComponent,
     },
     {
         path: 'login',

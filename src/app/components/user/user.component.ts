@@ -3,7 +3,7 @@ import { filter, map, Observable, switchMap } from 'rxjs';
 import { UserService } from '../../services/user.service';
 import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { User } from '../../models/user.model';
+import { UserModel } from '../../models/user.model';
 import { NavigationComponent } from "../navigation/navigation.component";
 import { environment } from '../../../../environment';
 
@@ -20,9 +20,9 @@ export class UserComponent implements OnInit {
 
   }
 
-  user$?: Observable<User>;
+  user$?: Observable<UserModel>;
 
-  user?: User;
+  user?: UserModel;
 
   ownsAcount: boolean = false;
 

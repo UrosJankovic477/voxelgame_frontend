@@ -1,17 +1,17 @@
 import { mat4, vec2, vec3, vec4 } from "gl-matrix";
-import { Camera } from "./camera.model";
-import { Scene } from "./scene.model";
-import { Mesh } from "./mesh.model";
-import { vertexShader } from '../../shaders/vertex.shader';
-import { fragmentShader } from '../../shaders/fragment.shader';
-import { SceneOptions } from "./scene-options.model";
+import { Camera } from "./camera";
+import { Scene } from "./scene";
+import { Mesh } from "./mesh";
+import { vertexShader } from '../shaders/vertex.shader';
+import { fragmentShader } from '../shaders/fragment.shader';
+import { SceneOptions } from "./scene-options";
 import rgba from "color-rgba";
-import { CollisionData } from "./octree.model";
-import { Sculpture } from "./sculpture.model";
+import { CollisionData } from "./octree";
+import { Sculpture } from "./sculpture";
 import { Store } from "@ngrx/store";
-import { AppState } from "../../store/app.state";
-import { selectSceneActive, selectSceneViewOnly } from "../../store/scene/scene.selector";
-import { sceneSave } from "../../store/scene/scene.actions";
+import { AppState } from "../store/app.state";
+import { selectSceneActive, selectSceneViewOnly } from "../store/scene/scene.selector";
+import { sceneSave } from "../store/scene/scene.actions";
 
 export class Renderer {
   constructor(
@@ -19,7 +19,7 @@ export class Renderer {
       private store: Store<AppState>,
       sceneOptions: SceneOptions 
   ) {
-
+    this.sceneOptions = sceneOptions;
     this.gl = this.canvas.getContext('webgl2');
     if (this.gl === null) {
       throw new Error('Failed to initialize WebGL rendering context');
@@ -50,27 +50,33 @@ export class Renderer {
     this.gl.useProgram(this.program);
     this.modelMatrixUniformLocation = this.gl.getUniformLocation(this.program, 'modelMat');
     this.projectionMatrixUniformLocation = this.gl.getUniformLocation(this.program, 'projectionMat');
-    
-    let sceneJson$;
-    if (sceneOptions.viewOnly) {
-      sceneJson$ = store.select(selectSceneViewOnly);
+
+    this.createScene(sceneOptions);
+  }
+
+  createScene(sceneOptions: SceneOptions) {
+    this.sceneOptions = {
+      ...this.sceneOptions,
+      ...sceneOptions
+    };
+    if (!!this.sceneOptions.scene) {
+      this.scene = Scene.fromJson(this.gl!, this.sceneOptions.scene);
     }
+
     else {
-      sceneJson$ = store.select(selectSceneActive);
+      this.store.select(selectSceneActive).subscribe(sceneJson => {
+        if (sceneJson !== null) {
+          this.scene = Scene.fromJson(this.gl!, sceneJson);
+        }
+        else {
+          this.scene = Scene.fromOptions(this.gl!, this.sceneOptions);
+        }
+      });
     }
-
-    sceneJson$.subscribe(sceneJson => {
-      if (sceneJson !== null) {
-        this.scene = Scene.fromJson(this.gl!, sceneJson);
-      }
-      else {
-        this.scene = Scene.fromOptions(this.gl!, sceneOptions);
-      }
-    });
-
     
     this.gl?.uniformMatrix4fv(this.modelMatrixUniformLocation, false, this.scene?.camera.transformMatrix!);
     this.loadScene();
+    this.render();
   }
 
   gl: WebGL2RenderingContext | null = null;
@@ -78,6 +84,7 @@ export class Renderer {
   fragmentShader: WebGLShader | null = null;
   program: WebGLProgram | null = null;
   scene: Scene | null = null;
+  sceneOptions: SceneOptions;
 
   modelMatrix: mat4 = mat4.create();
   projectuonMatrix: mat4 = mat4.create();

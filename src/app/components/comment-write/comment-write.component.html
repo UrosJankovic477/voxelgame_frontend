@@ -1,0 +1,11 @@
+<form [formGroup]="commentForm">
+    <mat-form-field>
+        <mat-label>Comment here</mat-label>
+        <textarea matInput formControlName="content"></textarea>
+    </mat-form-field>
+    <br>
+    <button mat-button type="submit" (click)="onSubmit()">Comment</button>
+    <button mat-button type="reset" (click)="onReset()">Cancel</button>
+</form>
+
+

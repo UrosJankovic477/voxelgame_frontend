@@ -1,13 +1,36 @@
 <div class="navigation">
-    <button class="button" routerLink="/game-canvas">Play</button>
-    <div *ngIf="user$ | async as user; else elseBlock">
-        <button class="button" [routerLink]="'user/' + user.username">
-            <img [src]="!!user.profilePictureLocation 
-            ? api + user.profilePictureLocation 
-            : defaultPictureLocation">
-            {{user.displayname}}
-        </button>
-    </div>
-    <ng-template #elseBlock><button class="button" routerLink="/login">Sign in</button></ng-template>
+    <button mat-flat-button routerLink="/game-canvas">
+        <mat-icon>games</mat-icon>
+        Play
+    </button>
+    <app-searchbar></app-searchbar>
+    <div style="margin-left: auto;">
+        <div *ngIf="user$ | async as user; else elseBlock">
+            <app-user-menu [user]="user" [token]="(token$ | async)!"></app-user-menu>
+        </div>
+        <ng-template #elseBlock>
+            <mat-accordion>
+                <mat-expansion-panel #signInExpansion>
+                    <mat-expansion-panel-header>
+                        <mat-panel-title>Sign in</mat-panel-title>
+                    </mat-expansion-panel-header>
+    
+                    <button mat-flat-button (click)="this.signInExpansion.close()" routerLink="/login">Log in</button>
+                    <br>
+                    <button mat-flat-button (click)="this.signInExpansion.close()" routerLink="/sign-up">Sign up</button>
+                    
+                </mat-expansion-panel>
+            </mat-accordion>
+        </ng-template>
 
+        
+    </div>
+    <button (click)="toggleNotificationsDisplay()" mat-mini-fab style="align-self: center; margin-right: 20px; margin-left: 10px;">
+        <mat-icon [matBadge]="unreadNotificationCount > 0 ? unreadNotificationCount : null">notifications</mat-icon>
+        
+    </button>
+    <ng-container #notifications style="margin-left: 0;"></ng-container>
+    
 </div>
+
+

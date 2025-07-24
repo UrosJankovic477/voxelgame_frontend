@@ -1,5 +1,5 @@
 import { vec3, vec4 } from "gl-matrix";
-import { Vertex } from "./vertex.model";
+import { Vertex } from "./vertex";
 
 export enum OctreeNodeState {
     empty,

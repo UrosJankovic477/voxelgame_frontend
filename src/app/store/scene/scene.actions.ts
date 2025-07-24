@@ -1,6 +1,4 @@
 import { createAction, props } from "@ngrx/store";
-import { SceneState } from "../app.state";
-import { Octree } from "../../models/webgl-models/octree.model";
 
 export const sceneSave = createAction(
     '[Scene] Scene Save',
@@ -16,3 +14,8 @@ export const sceneOpenForEdit = createAction(
     '[Scene] Scene Open For Edit',
     props<{ sceneJson: string }>()
 );
+
+export const sceneSavePreview = createAction(
+    '[Scene] Scene Save Preview',
+    props<{ preview: Blob, previewLocal: string }>()
+)

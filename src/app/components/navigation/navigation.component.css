@@ -1,33 +1,14 @@
 .navigation {
     display: flex;
     flex-direction: row;
-    height: 64px;
-    background-color: #B5E2FA;
-    margin: 0%;
+    height: 50px;
+    background-color: dodgerblue;
+    margin-bottom: 10px;
     padding: 0%;
+    box-shadow: 0px 5px 2px lightslategray;
 }
-.button {
-    display: flex;
-    height: 100%;
-    font-size: 90%;
-    background-color: #0FA3B1;
-    border-width: 0px;
-}
-.button:hover {
-    height: 100%;
-    font-size: 90%;
-    background-color: #1c8c96;
-    border-width: 0px;
-    transition: 0.7;
-}
-.button:active {
-    height: 100%;
-    font-size: 90%;
-    background-color: #5eadb4;
-    border-width: 0px;
-}
-.profilePic {
-    width: 80%;
-    height: 80%;
-    border-radius: 64px;
+.clickable:hover {
+    color: darkgray;
+    background-color: azure;
+    cursor: pointer;
 }

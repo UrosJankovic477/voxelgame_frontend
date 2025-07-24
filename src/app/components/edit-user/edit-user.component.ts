@@ -5,7 +5,7 @@ import { AppState } from '../../store/app.state';
 import { Observable, EMPTY, Subscription, combineLatest, map, iif, of, last, switchMap, first } from 'rxjs';
 import { loginRequest, loginFailure } from '../../store/auth/auth.actions';
 import { selectLoginToken, selectLoginUser } from '../../store/auth/auth.selectors';
-import { User } from '../../models/user.model';
+import { UserModel } from '../../models/user.model';
 import { UploadService } from '../../services/upload.service';
 import { UserService } from '../../services/user.service';
 import { CommonModule } from '@angular/common';
@@ -29,7 +29,7 @@ export class EditUserComponent implements OnInit {
 
   }
 
-  user$: Observable<User | null> = EMPTY;
+  user$: Observable<UserModel | null> = EMPTY;
   token$: Observable<string | null> = EMPTY;
   file: File | null = null;
 
@@ -60,15 +60,11 @@ export class EditUserComponent implements OnInit {
     }
 
     combineLatest([this.token$, this.user$]).pipe(
-      switchMap(([token, user]) => iif(() => this.file !== null, 
-      combineLatest([this.token$, this.user$, this.uploadService.uploadImage(this.file!, token!)]),
-      combineLatest([this.token$, this.user$, of(user?.profilePictureLocation)])).pipe(
-        switchMap(([token, user, profilePictureLocation]) => this.userService.editUser({
+      switchMap(([token, user]) => this.userService.editUser({
           displayname: this.editUserForm.value.displayname ?? user?.displayname,
           about: this.editUserForm.value.about ?? user?.about,
-          profilePictureLocation
-        }, token!))
-      )),
+        }, this.file, token!)
+      ),
       first()
     ).subscribe();
   }

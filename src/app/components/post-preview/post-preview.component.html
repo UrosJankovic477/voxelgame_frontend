@@ -1,0 +1,15 @@
+<mat-card>
+    <mat-card-header>
+        <img mat-card-image style="width: 300px; height: 200px;" [src]="api + '/' + post.previewPictureLocation"/>
+        <mat-card-title>
+            <button mat-flat-button [routerLink]="post.uuid">
+                {{this.post.title}}
+            </button>
+        </mat-card-title>
+        <mat-card-subtitle>
+            <a *ngIf="!!this.post.user; else deleted" [href]="'user/' + this.post.user.username">author: {{this.post.user.displayname}}</a>
+            <ng-template #deleted>[deleted]</ng-template>
+            {{this.post.posted | date}}
+        </mat-card-subtitle>
+    </mat-card-header>
+</mat-card>

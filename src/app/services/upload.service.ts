@@ -13,9 +13,9 @@ export class UploadService {
   public uploadImage(file: File, token: string) {
     const formData = new FormData();
     formData.append('file', file)
-    return this.client.post(`${environment.api}upload/image`, formData, {
+    return this.client.post(`${environment.api}/upload/image`, formData, {
       headers: {
-        'Authorization': `Bearer ${token}`
+        'Authorization': `Bearer ${token}`,
       },
       responseType: 'text',
     });
@@ -24,12 +24,21 @@ export class UploadService {
   public uploadPost(file: File, token: string) {
     const formData = new FormData();
     formData.append('file', file)
-    return this.client.post(`${environment.api}upload/post`, formData, {
+    return this.client.post(`${environment.api}/upload/post`, formData, {
       headers: {
         'Authorization': `Bearer ${token}`
       },
       responseType: 'text',
     });
   }
+
+  public delete(path: string, token: string) {
+    return this.client.delete(`${environment.api}/upload/${path}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      responseType: 'text',
+    });
+  } 
 
 }

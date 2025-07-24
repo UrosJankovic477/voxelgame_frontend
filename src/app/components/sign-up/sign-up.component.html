@@ -1,21 +1,46 @@
-<h3>Sign up</h3>
-<form [formGroup]="signUpForm" (ngSubmit)="onSubmit()">
+<form [formGroup]="signUpForm" (ngSubmit)="onSubmit()" style="width: 50%; margin: auto;">
 
-    <div>
-       <label for="username">
-         username
-       </label>
-       <input id="username" type="text" formControlName="username">
-     </div>
+  <h3>Sign up</h3>
 
-     <div>
-       <label for="password">
-        password
-       </label>
-       <input id="password" type="password" formControlName="password">
-     </div>
+  <p>
+    Upload profile picture 
+    <input type="file" class="file-input" (change)="onFileSelected($event)" #fileUpload>
+  </p>
+  
 
-    <button class="button" type="submit">login</button>
+  <mat-divider></mat-divider>
+
+  <p>
+    <mat-form-field>
+      <mat-label>Username</mat-label>
+      <input matInput id="username" type="text" formControlName="username">
+    </mat-form-field>
+  </p>
+  
+  <p>
+    <mat-form-field>
+      <mat-label>Display name</mat-label>
+      <input matInput id="displayname" type="text" formControlName="displayname">
+    </mat-form-field>
+  </p>
+
+  <p>
+    <mat-form-field>
+      <mat-label>Password</mat-label>
+      <input matInput id="password" type="password" formControlName="password">
+    </mat-form-field>
+  </p>
+
+  <p>
+    <mat-form-field>
+      <mat-label>Confirm password</mat-label>
+      <input matInput id="confirmPassword" type="password" formControlName="confirmPassword">
+    </mat-form-field>
+  </p>
+
+  <mat-divider></mat-divider>
+
+  <button mat-raised-button type="submit">Sign up</button>
 
 </form>
 

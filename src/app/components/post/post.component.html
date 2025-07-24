@@ -1,2 +1,33 @@
-<canvas id="c" width="800" height="600"></canvas>
-<br>
+<div *ngIf="this.voxelBuild$ | async as voxelBuild; else postNotFound">
+    <app-game-canvas [viewOnly]="true" [postUuid]="this.uuid"></app-game-canvas>
+    <br>
+    <app-subscribe-button *ngIf="!(owns$ | async)" [producerUsername]="voxelBuild.user?.username ?? null"></app-subscribe-button>
+    <h3>Desctiption</h3>
+    <p>{{ voxelBuild.description }}</p>
+    <br>
+    <div *ngIf="owns$ | async">
+        <button (click)="this.editPost()" routerLink="/game-canvas">Edit</button>
+        <button (click)="this.deletePost()" mat-icon-button><mat-icon>delete</mat-icon></button>
+    </div>
+    <div>
+        <div *ngIf="token$ | async as token; else notLoggedIn">
+            <app-comment-write #postCommentBox (saveComment)="postComment($event)"></app-comment-write>
+        </div>
+        <ng-template #notLoggedIn>
+            Sign in to comment
+            <button routerLink="/login">Sign in</button>
+        </ng-template>
+    </div>
+    <br>
+    <h3>Comments</h3>
+    <div *ngIf="comments$ | async as comments; else elseBlock">
+        <div *ngFor="let comment of comments">
+            <app-comment [comment]="comment"></app-comment>
+        </div>
+    </div>
+    <ng-template #elseBlock>No comments</ng-template>
+</div>
+<ng-template #postNotFound>
+    <h1>Post doesn't exist</h1>
+</ng-template>
+

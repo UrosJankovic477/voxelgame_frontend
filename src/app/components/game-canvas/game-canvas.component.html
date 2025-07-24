@@ -1,6 +1,7 @@
 <canvas id="c" width="800" height="600"></canvas>
 <br>
-<div>
+<div *ngIf="!this.viewOnly">
     <app-color-picker (changeColorEvent)="changeColor($event)"></app-color-picker>
-    <button routerLink="/post-form" (click)="this.saveScene()">Save</button>
+    <button [routerLink]="this.saveFormRoute" (click)="this.saveScene()">Save</button>
 </div>
+

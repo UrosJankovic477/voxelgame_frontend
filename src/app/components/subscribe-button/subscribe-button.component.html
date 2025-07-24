@@ -1,0 +1,3 @@
+<button mat-raised-button [disabled]="!(token$ | async) || !producerUsername" (click)="onClick()">
+    {{message}}
+</button>

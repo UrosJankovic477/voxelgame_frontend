@@ -1,7 +1,6 @@
 import { createReducer } from "@ngrx/store";
-import { User } from "../models/user.model";
+import { UserModel } from "../models/user.model";
 import { authReducer, initialAuthState } from "./auth/auth.reducer";
-import { Octree } from "../models/webgl-models/octree.model";
 
 export interface AppState {
     authState: AuthState,
@@ -10,12 +9,14 @@ export interface AppState {
 
 export interface AuthState {
     token: string | null,
-    user: User | null,
+    user: UserModel | null,
     errorMessage?: string
 };
 
 export interface SceneState {
     activeSceneJson: string | null;
+    preview: Blob;
+    previewLocal: string;
     viewOnlySceneJson: string | null;
 };
 

@@ -1,6 +1,6 @@
 import { createAction, props } from "@ngrx/store";
 import { UserDto } from "../../dto/user.dto";
-import { User } from "../../models/user.model";
+import { UserModel } from "../../models/user.model";
 import { LoginResault } from "../../models/login-resault.model";
 
 export const loginRequest = createAction(
@@ -27,7 +27,7 @@ export const loggedInUserUpdateRequest = createAction('[Auth] Logged In User Upd
 
 export const loggedInUserUpdateSucces = createAction(
     '[Auth] Logged In User Update Success',
-    props<User>()
+    props<UserModel>()
 );
 
 export const loggedInUserUpdateFailure = createAction(

@@ -1,5 +1,5 @@
 import { vec4 } from "gl-matrix";
-import { Vertex } from "./vertex.model";
+import { Vertex } from "./vertex";
 import { vec3 } from "gl-matrix";
 import rgba from "color-rgba";
 

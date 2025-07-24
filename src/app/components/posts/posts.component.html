@@ -1,6 +1,6 @@
 <h2>Posts</h2>
-<ul *ngFor="let post of posts">
-    <li>
-        {{post.title}}
-    </li>
-</ul>
+<mat-list>
+    <div *ngFor="let post of posts$ | async">
+        <app-post-preview [post]="post"></app-post-preview>
+    </div>
+</mat-list>

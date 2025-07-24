@@ -1,16 +1,19 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, HostListener, Input, model, OnInit } from '@angular/core';
+import { Component, HostListener, Input, model, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { mat4, vec3, vec4 } from 'gl-matrix';
-import { Mesh } from '../../models/webgl-models/mesh.model';
-import { Camera } from '../../models/webgl-models/camera.model';
 import rgba from 'color-rgba';
-import { Renderer } from '../../models/webgl-models/renderer.model';
+import { Renderer } from '../../webgl/renderer';
 import { EMPTY, empty, filter, from, fromEvent, groupBy, GroupedObservable, iif, interval, map, merge, mergeMap, mergeScan, Observable, partition, skipWhile, switchMap, takeUntil, zip } from 'rxjs';
 import { AppState } from '../../store/app.state';
 import { Store } from '@ngrx/store';
 import { ColorPickerComponent } from "../color-picker/color-picker.component";
 import { VoxelBuildService } from '../../services/voxel-build.service';
 import { RouterModule } from '@angular/router';
+import { UploadService } from '../../services/upload.service';
+import { selectLoginToken } from '../../store/auth/auth.selectors';
+import { sceneSavePreview } from '../../store/scene/scene.actions';
+import { CommonModule } from '@angular/common';
+import { environment } from '../../../../environment';
 
 
 // refactor: separate render related code from component class
@@ -18,17 +21,37 @@ import { RouterModule } from '@angular/router';
 @Component({
   selector: 'app-game-canvas',
   standalone: true,
-  imports: [ColorPickerComponent, RouterModule],
+  imports: [ColorPickerComponent, RouterModule, CommonModule],
   templateUrl: './game-canvas.component.html',
   styleUrl: './game-canvas.component.css'
 })
-export class GameCanvasComponent implements OnInit {
+export class GameCanvasComponent implements OnInit, OnChanges {
 
   constructor(
-    private client: HttpClient,
     private voxelBuildService: VoxelBuildService,
+    private uploadService: UploadService,
     private store: Store<AppState>
   ) { }
+
+  async ngOnChanges(changes: SimpleChanges): Promise<void> {
+    const uuid = changes['postUuid'].currentValue;
+    if (!uuid) {
+      console.warn('No post UUID provided.');
+      this.scene = null;
+    }
+    else {
+      this.scene = await fetch(`${environment.api}/uploads/posts/${uuid}.json`).then(response => response.text());
+    }
+    this.renderer?.createScene({
+      scene: this.scene
+    });
+  }
+
+  @Input() postUuid: string | null = null;
+  @Input() viewOnly: boolean = false;
+  @Input() editMode: boolean = false;
+
+  scene: string | null = null;
 
   canvas: HTMLCanvasElement | null = null;
 
@@ -42,8 +65,15 @@ export class GameCanvasComponent implements OnInit {
 
   color: vec4 = vec4.fromValues(0, 0, 0, 255);
 
+  
+  public get saveFormRoute() : string {
+    return '/post-save-form/' + (this.postUuid ?? '');
+  }
+  
+
   saveScene() {
     this.renderer?.saveScene();
+    this.savePreview();
   }
 
   ngOnInit(): void {
@@ -92,9 +122,10 @@ export class GameCanvasComponent implements OnInit {
         vec4.scaleAndAdd(intersection!, intersection!, collisionData.delta!, 0.5);
         color = null;
       }
-      
-      vec4.floor(intersection!, intersection!);
-      this.renderer?.changeBlock(intersection!.slice(0, 3) as vec3, color);
+      if (!this.viewOnly) {
+        vec4.floor(intersection!, intersection!);
+        this.renderer?.changeBlock(intersection!.slice(0, 3) as vec3, color);
+      }
       
     }); 
     this.mouseEvent$.pipe(
@@ -151,12 +182,15 @@ export class GameCanvasComponent implements OnInit {
         );
       }), 
     ).subscribe(angles => this.renderer?.rotateCamera(angles[0], angles[1]));
-    
-    this.renderer = new Renderer(this.canvas, this.store, {
+    this.initRenderer();
+  }
+
+  initRenderer() {
+    this.renderer = new Renderer(this.canvas!, this.store, {
       backgroundColor: 'DeepSkyBlue',
       size: 16,
       gridColor: 'RosyBrown',
-      viewOnly: false
+      scene: this.scene
     });
     this.renderer.loadScene();
     this.renderer.render();
@@ -181,6 +215,22 @@ export class GameCanvasComponent implements OnInit {
     }
     else {
       vec4.copy(this.color, color);
+    }
+  }
+
+  savePreview() {
+    this.renderer?.render();
+    try {
+      this.canvas?.toBlob((blob) => {
+        if (blob == null) {
+          throw new Error("Couldn't save preview");
+        }
+        const previewUrl = URL.createObjectURL(blob);
+        this.store.dispatch(sceneSavePreview({ preview: blob, previewLocal: previewUrl ?? ''}));
+      }, 'image/png')
+    } catch (error) {
+      console.error(error);
+      
     }
   }
 

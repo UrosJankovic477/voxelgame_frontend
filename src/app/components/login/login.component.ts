@@ -7,14 +7,28 @@ import { loginFailure, loginRequest, loginSuccess } from '../../store/auth/auth.
 import { AuthEffects } from '../../store/auth/auth.effects';
 import { CommonModule, NgIf } from '@angular/common';
 import { AppState } from '../../store/app.state';
-import { User } from '../../models/user.model';
+import { UserModel } from '../../models/user.model';
 import { authReducer } from '../../store/auth/auth.reducer';
 import { selectLoginErrorMessage, selectLoginToken } from '../../store/auth/auth.selectors';
+import { RouterModule } from '@angular/router';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatDividerModule } from '@angular/material/divider';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule, StoreModule],
+  imports: [
+    ReactiveFormsModule, 
+    CommonModule, 
+    StoreModule, 
+    RouterModule,
+    MatInputModule,
+    MatButtonModule,
+    MatFormFieldModule,
+    MatDividerModule,
+  ],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
@@ -22,7 +36,7 @@ export class LoginComponent implements OnInit {
 
   constructor(
     private store: Store<AppState>,
-    private formBuilder: FormBuilder
+    private formBuilder: FormBuilder,
   ) {
 
   }
@@ -63,9 +77,6 @@ export class LoginComponent implements OnInit {
     else {
       this.store.dispatch(loginFailure({ errorMessage: 'Type username and password.' }));
     }
-    console.log(this.errorMessage);
-    
-    
   }
  
 }

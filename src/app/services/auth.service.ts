@@ -11,7 +11,7 @@ export class AuthService {
   constructor(private client: HttpClient) { }
 
   public login(username: string, password: string) {
-    return this.client.post<LoginResult>(`${environment.api}auth/login`, {
+    return this.client.post<LoginResult>(`${environment.api}/auth/login`, {
       username: username,
       password: password
     });
