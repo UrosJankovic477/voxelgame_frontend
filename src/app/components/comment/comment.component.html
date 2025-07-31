@@ -1,6 +1,8 @@
 <mat-card>
     <mat-card-header>
-        <img mat-card-avatar [src]="!!comment.profilePictureLocation ? api + '/' + comment.profilePictureLocation : defaultPictureLocation">
+        <img mat-card-avatar [src]="!!comment.profilePictureLocation ? 
+        environmentService.api + '/' + comment.profilePictureLocation : 
+        environmentService.defaultPictureLocation">
         <mat-card-title>
             <div *ngIf="!!comment.username; else deleted" style="display: flex; flex-direction: row;">
                 <a [href]=" '/user/' + comment.username">
@@ -23,12 +25,14 @@
         <ng-template #content>
             <p>{{comment.content}}</p>
             <div style="display: flex; flex-direction: row;">
-                <button mat-button (click)="showWriteReplyForm()">reply</button>
+                <button mat-button *ngIf="token$ | async" (click)="showWriteReplyForm()">reply</button>
                 <div *ngIf="isLoggedInUser$ | async">
                     <button mat-button (click)="editComment()">edit</button>
                     <button mat-button (click)="deleteComment()">delete</button>
                 </div>
-                <button mat-button (click)="getReplies()">show replies</button>
+                <button *ngIf="comment.count > 0" mat-button (click)="toggleReplies()">show replies
+                    <mat-icon>{{repliesShown ? "arrow_drop_down" : "arrow_right"}}</mat-icon>
+                </button>
             </div>
             <ng-container #container></ng-container>
         </ng-template>
@@ -36,9 +40,14 @@
 </mat-card>
 
 <mat-list role="list" style="margin-left: 10px;">
-    <ng-container *ngFor="let reply of replies$ | async" >
-        <app-comment [comment]="reply"></app-comment>
-    </ng-container>
+    <div *ngIf="repliesShown">
+        <ng-container *ngFor="let reply of replies" >
+            <app-comment [comment]="reply"></app-comment>
+        </ng-container>
+        <div *ngIf="replies.length < repliesCount">
+            <button mat-flat-button (click)="getNextRepliesPage()">Load more replies ({{repliesCount - replies.length}})</button>
+        </div>
+    </div>
 </mat-list>
 
 

@@ -2,6 +2,7 @@ import { vec3, vec4 } from "gl-matrix";
 import { Mesh } from "./mesh";
 import { Vertex } from "./vertex";
 import { Octree, OctreeNode, OctreeNodeState } from "./octree";
+import { environment } from "../../../environment";
 
 export class Sculpture {
     private constructor(private _size: number) {
@@ -24,6 +25,7 @@ export class Sculpture {
 
     data?: Octree;
     mesh?: Mesh;
+    private chunks?: Mesh;
     private dirty: boolean = false;
 
     reset() {
@@ -87,6 +89,35 @@ export class Sculpture {
         }, [])
     }
 
+    private generateChunks(gl: WebGL2RenderingContext) {
+        const vertices = this.data!.chunks
+        .filter(chunk => !!chunk)
+        .map((chunk, index) => ({ ...chunk, index }))
+        .flatMap((chunk) => {
+            return Sculpture.cubeVertices.map(cubeVertex => {
+                const position = vec3.create();
+                
+                return {
+                    position: vec3.scaleAndAdd(
+                        position, 
+                        chunk.corner1!,
+                        cubeVertex.position, 
+                        chunk.width!
+                    ),
+                    color: vec4.fromValues(255, 0, 0, 255),
+                    normal: cubeVertex.normal
+                };
+            });
+        });
+        delete this.chunks;
+        if (vertices.length > 0) {
+            this.chunks = new Mesh(gl, vertices);
+        }
+        if (environment.debugMode) {
+            this.chunks?.load(gl);       
+        }
+    }
+
     private generateMesh(gl: WebGL2RenderingContext) {   
         const vertices = this.data!.blocks
         .map((colorAndState, index) => ({ ...colorAndState, index }))
@@ -132,7 +163,14 @@ export class Sculpture {
     public render(gl: WebGL2RenderingContext) {
         if (this.dirty) {
             this.generateMesh(gl);
+            if (environment.debugMode) {
+                this.generateChunks(gl);
+            }
         }
         this.mesh?.render(gl, gl.TRIANGLES);
+        if (environment.debugMode) {
+            this.chunks?.render(gl, gl.LINES);
+        }
+        
     }
 }

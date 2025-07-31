@@ -1,7 +1,8 @@
-<canvas id="c" width="800" height="600"></canvas>
+<canvas id="c" width="800" height="600" class="canvas"></canvas>
 <br>
-<div *ngIf="!this.viewOnly">
+<div *ngIf="!this.viewOnly" class="options">
     <app-color-picker (changeColorEvent)="changeColor($event)"></app-color-picker>
-    <button [routerLink]="this.saveFormRoute" (click)="this.saveScene()">Save</button>
+    <button mat-raised-button [routerLink]="this.saveFormRoute" (click)="this.saveScene()">Save</button>
+    <button mat-raised-button (click)="resetScene()">Reset</button>
 </div>
 

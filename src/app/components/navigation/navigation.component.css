@@ -4,8 +4,11 @@
     height: 50px;
     background-color: dodgerblue;
     margin-bottom: 10px;
-    padding: 0%;
+    padding-left: 10px;
+    padding-right: 10px;
     box-shadow: 0px 5px 2px lightslategray;
+    align-items: center;
+    gap: 10px;
 }
 .clickable:hover {
     color: darkgray;

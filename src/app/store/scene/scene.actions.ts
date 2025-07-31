@@ -18,4 +18,8 @@ export const sceneOpenForEdit = createAction(
 export const sceneSavePreview = createAction(
     '[Scene] Scene Save Preview',
     props<{ preview: Blob, previewLocal: string }>()
-)
+);
+
+export const sceneReset = createAction(
+    '[Scene] Scene Reset' 
+);

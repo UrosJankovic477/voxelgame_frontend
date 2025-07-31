@@ -1,7 +1,42 @@
 <div *ngIf="user$ | async as user">
-    <h1 class="text">{{user.displayname}}</h1>
-    <img [src]="!!user.profilePictureLocation 
-    ? api + '/' + user.profilePictureLocation 
-    : defaultPictureLocation">
-    <div [class]="['container', 'text']" >{{user.about}}</div>   
+    <mat-card>
+        <mat-card-header>
+            <img mat-card-avatar [src]="!!user.profilePictureLocation 
+            ? environmentService.api + '/' + user.profilePictureLocation 
+            : environmentService.defaultPictureLocation">
+            <mat-card-title>
+                {{user.displayname}}
+            </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+            {{userAbout}}
+        </mat-card-content>
+    </mat-card>
+    <app-subscribe-button *ngIf="!ownsAcount; else owns" [producerUsername]="user.username!"></app-subscribe-button>
+    <ng-template #owns>
+        <h2>Subscriptions:</h2>
+        <mat-list>
+
+                <mat-card *ngFor="let subscription of subscriptions$ | async as subscriptions">
+                    <mat-card-header>
+                        <img mat-card-avatar [src]="!!subscription.profilePictureLocation 
+                            ? environmentService.api + '/' + subscription.profilePictureLocation 
+                            : environmentService.defaultPictureLocation">
+                        <mat-card-title>
+                            {{subscription.displayname}}
+                        </mat-card-title>
+                    </mat-card-header>
+                    <mat-card-content>
+
+                    </mat-card-content>
+                    <mat-card-actions>
+                        <button mat-raised-button [routerLink]="'/user/' + subscription.username">Visit profile</button>
+                        <app-subscribe-button [producerUsername]="subscription.username!"></app-subscribe-button>
+                    </mat-card-actions>
+                </mat-card>
+        </mat-list>
+    </ng-template>
+    <mat-list>
+        <app-post-preview *ngFor="let voxelBuild of builds$ | async as builds" [post]="voxelBuild"></app-post-preview>
+    </mat-list>
 </div>

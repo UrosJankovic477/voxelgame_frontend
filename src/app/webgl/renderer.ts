@@ -12,6 +12,7 @@ import { Store } from "@ngrx/store";
 import { AppState } from "../store/app.state";
 import { selectSceneActive, selectSceneViewOnly } from "../store/scene/scene.selector";
 import { sceneSave } from "../store/scene/scene.actions";
+import { environment } from "../../../environment";
 
 export class Renderer {
   constructor(
@@ -28,10 +29,16 @@ export class Renderer {
     if (backgroundColor === undefined || backgroundColor.length == 0) {
       backgroundColor = [0, 0, 0, 1];
     }
+    else {
+      vec4.scale(backgroundColor, backgroundColor, 1 / 255);
+      backgroundColor[3] = 1;
+    }
+    
+    
     this.gl.enable(this.gl.CULL_FACE);
     this.gl.enable(this.gl.DEPTH_TEST);
-    this.gl.clearColor(...backgroundColor);
     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+    this.gl.clearColor(...backgroundColor);
     this.vertexShader = this.loadShader(this.gl.VERTEX_SHADER, vertexShader);
     this.fragmentShader = this.loadShader(this.gl.FRAGMENT_SHADER, fragmentShader);
     this.program = this.gl.createProgram();
@@ -50,8 +57,9 @@ export class Renderer {
     this.gl.useProgram(this.program);
     this.modelMatrixUniformLocation = this.gl.getUniformLocation(this.program, 'modelMat');
     this.projectionMatrixUniformLocation = this.gl.getUniformLocation(this.program, 'projectionMat');
-
+    
     this.createScene(sceneOptions);
+
   }
 
   createScene(sceneOptions: SceneOptions) {
@@ -85,9 +93,11 @@ export class Renderer {
   program: WebGLProgram | null = null;
   scene: Scene | null = null;
   sceneOptions: SceneOptions;
+  private ray?: Mesh;
+  
 
   modelMatrix: mat4 = mat4.create();
-  projectuonMatrix: mat4 = mat4.create();
+  projectionMatrix: mat4 = mat4.create();
 
   modelMatrixUniformLocation: WebGLUniformLocation | null = null;
   projectionMatrixUniformLocation: WebGLUniformLocation | null = null;
@@ -131,10 +141,21 @@ export class Renderer {
   public render() {
     this.resizeCanvas();
     this.gl!.viewport(0, 0, this.canvas!.width, this.canvas!.height);
-    mat4.ortho(this.projectuonMatrix, 0, this.canvas!.width, 0, this.canvas!.height, 1000, -1000);
-    this.gl!.uniformMatrix4fv(this.projectionMatrixUniformLocation, false, this.projectuonMatrix);
+    mat4.ortho(this.projectionMatrix, 0, this.canvas!.width, 0, this.canvas!.height, 1000, -2000);
+    this.gl!.uniformMatrix4fv(this.projectionMatrixUniformLocation, false, this.projectionMatrix);
     this.gl!.clear(this.gl!.COLOR_BUFFER_BIT | this.gl!.DEPTH_BUFFER_BIT);
     this.scene!.render(this.gl!);
+    if (environment.debugMode && this.ray) {
+      
+      this.ray.load(this.gl!);
+      this.ray.render(this.gl!, this.gl!.LINES);
+
+      const errorCode = this.gl?.getError();
+      if (errorCode != 0) {
+        console.error(errorCode);
+      }
+      
+    }
   }
 
   translateCamera(dx: number, dy: number) {
@@ -187,9 +208,30 @@ export class Renderer {
     const delta = vec4.create();
 
     vec4.sub(delta, end, start);
+
+     
     
     const collisionData = this.testCollisionSculpture(start, delta);
 
+    let rayEnd;
+
+    if (environment.debugMode) {
+      rayEnd = vec4.clone(start);
+      vec4.scaleAndAdd(rayEnd, rayEnd, delta, 100);
+      this.ray = new Mesh(this.gl!, [
+        {
+          color: [0, 0, 0, 255],
+          normal: [0, 1, 0],
+          position: start.slice(0, 3) as vec3
+        },
+        {
+          color: [0, 0, 0, 255],
+          normal: [0, 1, 0],
+          position: (collisionData.intersection ?? rayEnd).slice(0, 3) as vec3
+        }
+      ]);
+    }
+    
     if (!collisionData.collision) {
       return this.testCollisionGrid(start, delta);
     }
@@ -217,7 +259,7 @@ export class Renderer {
       collision: true,
       delta,
       intersection,
-      t
+      distance: t
     };
   }
 

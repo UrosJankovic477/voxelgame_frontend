@@ -1,21 +1,14 @@
-<mat-accordion>
-    <mat-expansion-panel #userExpansion>
-        <mat-expansion-panel-header>
-            <mat-panel-title>
-                <img class="profilePic" [src]="!!user.profilePictureLocation 
-                ? api + '/' + user.profilePictureLocation 
-                : defaultPictureLocation">
-            </mat-panel-title>
-            <mat-panel-description>{{user.displayname}}</mat-panel-description>
-        </mat-expansion-panel-header>
-
-        <button mat-flat-button (click)="userExpansion.close()" [routerLink]="'/user/' + user.username">Go to profile</button>
-        <br>
-        <button mat-flat-button (click)="userExpansion.close()" [routerLink]="'/edit-profile'">Edit profile</button>
-        <br>
-        <button mat-flat-button (click)="signOutClick()" routerLink="/">Sign out</button>
-        <br>
-        <button mat-flat-button (click)="deleteClick()">Delete account</button>
-        
-    </mat-expansion-panel>
-</mat-accordion>
+<div style="display: flex; flex-direction: row; align-items: center;">
+    <img class="profilePic" [src]="!!user.profilePictureLocation 
+        ? environmentService.api + '/' + user.profilePictureLocation 
+        : environmentService.defaultPictureLocation">
+    <button mat-flat-button [matMenuTriggerFor]="userMenu">
+        {{user.displayname}}
+    </button>
+    <mat-menu #userMenu>
+        <button mat-menu-item [routerLink]="'/user/' + user.username">Go to profile</button>
+        <button mat-menu-item [routerLink]="'/edit-profile'">Edit profile</button>
+        <button mat-menu-item (click)="signOutClick()" routerLink="/">Sign out</button>
+        <button mat-menu-item (click)="deleteClick()">Delete account</button>
+    </mat-menu>
+</div>

@@ -1,6 +1,6 @@
 import { createReducer, on } from "@ngrx/store";
 import { SceneState } from "../app.state";
-import { sceneOpenForEdit, sceneOpenForView, sceneSave, sceneSavePreview } from "./scene.actions";
+import { sceneOpenForEdit, sceneOpenForView, sceneReset, sceneSave, sceneSavePreview } from "./scene.actions";
 
 export const initialSceneState: SceneState = {
     activeSceneJson: null,
@@ -30,5 +30,6 @@ export const sceneReducer = createReducer(
         ...state,
         preview: preview,
         previewLocal: previewLocal
-    }))
+    })),
+    on(sceneReset, state => initialSceneState)
 );

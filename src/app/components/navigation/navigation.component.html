@@ -9,25 +9,17 @@
             <app-user-menu [user]="user" [token]="(token$ | async)!"></app-user-menu>
         </div>
         <ng-template #elseBlock>
-            <mat-accordion>
-                <mat-expansion-panel #signInExpansion>
-                    <mat-expansion-panel-header>
-                        <mat-panel-title>Sign in</mat-panel-title>
-                    </mat-expansion-panel-header>
-    
-                    <button mat-flat-button (click)="this.signInExpansion.close()" routerLink="/login">Log in</button>
-                    <br>
-                    <button mat-flat-button (click)="this.signInExpansion.close()" routerLink="/sign-up">Sign up</button>
-                    
-                </mat-expansion-panel>
-            </mat-accordion>
+            <button mat-flat-button [matMenuTriggerFor]="signInMenu">Sign in</button>
+            <mat-menu #signInMenu>
+                <button mat-menu-item routerLink="/login">Log in</button>
+                <button mat-menu-item routerLink="/sign-up">Sign up</button>
+            </mat-menu>
         </ng-template>
 
         
     </div>
-    <button (click)="toggleNotificationsDisplay()" mat-mini-fab style="align-self: center; margin-right: 20px; margin-left: 10px;">
+    <button (click)="toggleNotificationsDisplay()" mat-mini-fab style="margin-right: 10px;">
         <mat-icon [matBadge]="unreadNotificationCount > 0 ? unreadNotificationCount : null">notifications</mat-icon>
-        
     </button>
     <ng-container #notifications style="margin-left: 0;"></ng-container>
     

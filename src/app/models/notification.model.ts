@@ -8,4 +8,7 @@ export interface NotificationModel {
     posterDisplayname: string | null;
     profilePictureLocation: string | null;
     commentParentUuid: string | null;
+    commentPostUuid: string | null;
+    commentContent: string | null;
+    voxelBuildTitle: string | null;
 }

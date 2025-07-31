@@ -24,7 +24,7 @@ export type CollisionData = {
     intersection?: vec4;
     normal?: vec4;
     delta?: vec4;
-    t?: number;
+    distance?: number;
 }
 
 export class Octree {
@@ -122,8 +122,27 @@ export class Octree {
         return this._size;
     }
 
-    public get blocks(): Readonly<{ color: vec4, state: OctreeNodeState}[]> {
-        return this.leaves!.map(node => ({ color: node.color, state: node.state, parent}));
+    public get blocks(): Readonly<{ color: vec4, state: OctreeNodeState }[]> {
+        return this.leaves!.map(node => ({ color: node.color, state: node.state }));
+    }
+
+    private getChunksRecursive(node: OctreeNode): ({corner1: vec3, width: number} | null)[] {
+        const chunks: ({corner1: vec3, width: number} | null)[]  = [];
+        if (node.state != OctreeNodeState.empty) {
+            const corner1 = vec3.clone(node.position);
+            const width = 2 ** node.level;
+            chunks.push({corner1, width});
+        }
+        return chunks.concat(node.children
+        .filter(child => !!child)
+        .flatMap(child => this.getChunksRecursive(child!))
+        .filter(chunk => !!chunk));
+    }
+
+    public get chunks() {
+        const chunks = this.getChunksRecursive(this.root!);
+        
+        return chunks;
     }
 
     private getIndex(x: number, y: number, z: number) {
@@ -131,7 +150,7 @@ export class Octree {
     }
 
     public placeBlock(x: number, y: number, z: number, color: vec4) {
-        
+    
         const index = this.getIndex(x, y, z);
         
         if (this.leaves![index].state != OctreeNodeState.empty) {
@@ -205,20 +224,21 @@ export class Octree {
                 t = (corner2[i] - intersection[i] + Number.EPSILON) / delta[i];
                 vec4.scaleAndAdd(intersection, intersection, delta, t);
             }
-            
         }
+
+        const margin = 10;
         
         for (let i = 0; i < 3; i++) {
-            if (intersection[i] < corner1[i] - Number.EPSILON * 10 || intersection[i] > corner2[i] + Number.EPSILON * 10) {
+            if (intersection[i] < corner1[i] - Number.EPSILON * margin || intersection[i] > corner2[i] + Number.EPSILON * margin) {
                 // no intersection
                 return {
                     collision: false
                 };
             }
-            if (intersection[i] >= corner1[i] - Number.EPSILON * 10 && intersection[i] <= corner1[i] + Number.EPSILON) {
+            if (intersection[i] >= corner1[i] - Number.EPSILON * margin && intersection[i] <= corner1[i] + Number.EPSILON * margin) {
                 normal[i] = -1;
             }
-            else if (intersection[i] >= corner2[i] - Number.EPSILON * 10 && intersection[i] <= corner2[i] + Number.EPSILON) {
+            else if (intersection[i] >= corner2[i] - Number.EPSILON * margin && intersection[i] <= corner2[i] + Number.EPSILON * margin) {
                 normal[i] = 1;
             }
         }
@@ -228,7 +248,7 @@ export class Octree {
             intersection,
             delta,
             normal,
-            t
+            distance: vec4.dist(start, intersection)
         };
     }
 
@@ -243,12 +263,14 @@ export class Octree {
         const width = 2 ** node.level;
         vec3.add(corner2, corner2, [width, width, width]);
 
-        const collisionData = this.testCollisionBoundingBox(start, delta, corner1, corner2);
-        
+        const collisionData = this.testCollisionBoundingBox(start, delta, corner1, corner2);  
 
         if (!collisionData.collision) {
             return { collision: false };
         }
+
+        console.log(collisionData.intersection);
+        
         
         if (node.state == OctreeNodeState.filled) {
             return collisionData;
@@ -261,15 +283,16 @@ export class Octree {
             delta: [0, 0, 0, 0],
             intersection: [0, -1, 0, 0],
             normal: [0, 0, 0, 0],
-            t: Number.MAX_VALUE
+            distance: Number.MAX_VALUE
         };
 
-        return occupied.reduce((firstCollision: CollisionData, node) => {
+        return occupied.reduce((closestCollision: CollisionData, node) => {
             const nextCollision = this.testCollision(collisionData.intersection!, delta, node!);
-            if (nextCollision.collision && nextCollision.t! < firstCollision.t!) {
-                firstCollision = nextCollision;
+            if (nextCollision.collision 
+                && vec4.dist(start, nextCollision.intersection!) < vec4.dist(closestCollision.intersection!, start)) {
+                closestCollision = nextCollision;
             }
-            return firstCollision;
+            return closestCollision;
         }, initialValue);
     }
 }

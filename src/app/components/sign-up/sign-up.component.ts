@@ -10,6 +10,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-sign-up',
@@ -30,7 +31,8 @@ export class SignUpComponent {
   constructor(
     private userService: UserService, 
     private formBuilder: FormBuilder,
-    private store: Store<AppState>
+    private store: Store<AppState>,
+    private router: Router
   ) {
 
   }
@@ -73,7 +75,7 @@ export class SignUpComponent {
           password: this.signUpForm.value.password!,
         }))
       })
-      
+      this.router.navigate(['/'])
     }
   }
 }

@@ -2,7 +2,7 @@ import { Component, ComponentRef, OnInit, ViewChild, ViewContainerRef } from '@a
 import { Store, StoreModule } from '@ngrx/store';
 import { AppState } from '../../store/app.state';
 import { UserModel } from '../../models/user.model';
-import { EMPTY, filter, Observable, switchMap, withLatestFrom } from 'rxjs';
+import { BehaviorSubject, EMPTY, filter, Observable, switchMap, withLatestFrom } from 'rxjs';
 import { selectLoginToken, selectLoginUser } from '../../store/auth/auth.selectors';
 import { CommonModule } from '@angular/common';
 import { environment } from '../../../../environment';
@@ -19,6 +19,7 @@ import { NotificationsComponent } from '../notifications/notifications.component
 import { NotificationsService } from '../../services/notifications.service';
 import { NotificationModel } from '../../models/notification.model';
 import { CommentWriteComponent } from '../comment-write/comment-write.component';
+import { MatMenu, MatMenuModule } from '@angular/material/menu';
 
 @Component({
   selector: 'app-navigation',
@@ -31,7 +32,8 @@ import { CommentWriteComponent } from '../comment-write/comment-write.component'
     MatButtonModule,
     MatIconModule,
     UserMenuComponent,
-    MatBadgeModule
+    MatBadgeModule,
+    MatMenuModule,
 ],
   templateUrl: './navigation.component.html',
   styleUrl: './navigation.component.css'
@@ -41,7 +43,7 @@ export class NavigationComponent implements OnInit {
 
   constructor(
     private store: Store<AppState>,
-    private notificationService: NotificationsService
+    private notificationService: NotificationsService,
   ) {
 
   }
@@ -54,6 +56,7 @@ export class NavigationComponent implements OnInit {
   user$: Observable<UserModel | null> = EMPTY;
   token$: Observable<string | null> = EMPTY;
   notifications$: Observable<[NotificationModel[], number]> = EMPTY;
+  notificationSubject = new BehaviorSubject<void>(undefined);
   unreadNotificationCount = 0;
   notifications: NotificationModel[] = [];
   notificaionsShown: boolean = false;
@@ -62,30 +65,28 @@ export class NavigationComponent implements OnInit {
   ngOnInit(): void {
     this.user$ = this.store.select(selectLoginUser);
     this.token$ = this.store.select(selectLoginToken);
-    this.notifications$ = this.token$.pipe(
-      filter(token => !!token),
-      switchMap(token => this.notificationService.getNotifications(token!))
+    this.notifications$ = this.notificationSubject.pipe(
+      withLatestFrom(this.token$),
+      filter(([_, token]) => !!token),
+      switchMap(([_, token]) => this.notificationService.getNotifications(token!))
     );
     this.notifications$.subscribe(([notifications, count]) => {
-      this.unreadNotificationCount = count;
+      this.unreadNotificationCount = count ?? 0;
       this.notifications = notifications;
     });
+
+    this.notificationSubject.next();
+    
   }
 
-  public get api() {
-    return environment.api;
-  }
   
-  public get defaultPictureLocation() {
-    return environment.defaultProfilePicture;
-  }
 
   showNotifications() {
     this.notificationsComponent = this.viewContainerRef.createComponent(NotificationsComponent, {
 
     });
     this.notificationsComponent.setInput('notifications', this.notifications);
-    
+    this.notificationsComponent.instance.onDeleteNotification.subscribe(id => this.deleteNotification(id));
   }
 
   removeNotifications() {
@@ -101,6 +102,14 @@ export class NavigationComponent implements OnInit {
       this.showNotifications();
       this.notificaionsShown = true;
     }
+  }
+
+  deleteNotification(id: number) {
+    this.token$.pipe(
+      switchMap(token => this.notificationService.deleteNotification(id, token!))
+    ).subscribe();
+    this.notificationSubject.next();
+    this.notificationsComponent?.setInput('notifications', this.notifications);
   }
   
 }

@@ -9,12 +9,14 @@ import { logout } from '../../store/auth/auth.actions';
 import { withLatestFrom } from 'rxjs';
 import { UserService } from '../../services/user.service';
 import { MatButtonModule } from '@angular/material/button';
+import { EnvironmentService } from '../../services/environment.service';
+import { MatMenuModule } from '@angular/material/menu'
 
 @Component({
   selector: 'app-user-menu',
   standalone: true,
   imports: [
-    MatExpansionModule,
+    MatMenuModule,
     MatButtonModule,
     RouterModule
   ],
@@ -25,31 +27,20 @@ export class UserMenuComponent {
 
   constructor(
     private store: Store<AppState>,
-    private service: UserService
+    private service: UserService,
+    public environmentService: EnvironmentService
   ) {
-
   }
 
   @Input() user!: UserModel;
   @Input() token!: string;
-  @ViewChild('userExpansion') userExpansion!: MatExpansionPanel;
 
-
-  public get api() {
-    return environment.api;
-  }
-  
-  public get defaultPictureLocation() {
-    return environment.defaultProfilePicture;
-  }
 
   signOutClick() {
-    this.userExpansion.close();
     this.store.dispatch(logout());
   }
 
   deleteClick() {
-    this.userExpansion.close();
     this.service.deleteUser(this.user.username!, this.token)
     this.store.dispatch(logout());
   }

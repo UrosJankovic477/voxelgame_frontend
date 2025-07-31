@@ -21,24 +21,24 @@ export class CommentService {
     })
   }
 
-  editComment(content: string, id: number, token: string) {
-    return this.client.put(`${environment.api}/comment/${id}`, {content: content}, {
+  editComment(content: string, uuid: string, token: string) {
+    return this.client.put(`${environment.api}/comment/${uuid}`, {content: content}, {
       headers: {
         'Authorization': `Bearer ${token}`
       },
     })
   }
 
-  deleteComment(id: number, token: string) {
-    return this.client.delete(`${environment.api}/comment/${id}`, {
+  deleteComment(uuid: string, token: string) {
+    return this.client.delete(`${environment.api}/comment/${uuid}`, {
       headers: {
         'Authorization': `Bearer ${token}`
       },
     })
   }
 
-  getReplies(id: number, count: number, page: number) {
-    let url = new URL(`/comment/${id}/replies`, environment.api);
+  getReplies(uuid: string, count: number, page: number) {
+    let url = new URL(`/comment/${uuid}/replies`, environment.api);
     if (count) {
       url.searchParams.set('count', `${count}`);
     }
@@ -49,11 +49,13 @@ export class CommentService {
     return this.client.get<CommentModel[]>(url.toString());
   }
   
-  reply(content: string, id: number, token: string) {
-    return this.client.post(`${environment.api}/comment/${id}`, { content: content }, {
+  reply(content: string, uuid: string, token: string) {
+    return this.client.post(`${environment.api}/comment/${uuid}`, { content: content }, {
       headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    })
+        'Authorization': `Bearer ${token}`,
+        
+      },
+      responseType: 'text'
+    });
   }
 }

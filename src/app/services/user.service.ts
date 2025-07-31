@@ -8,6 +8,7 @@ import { AppState } from '../store/app.state';
 import { Store } from '@ngrx/store';
 import { selectLoginUser } from '../store/auth/auth.selectors';
 import { loggedInUserUpdateRequest } from '../store/auth/auth.actions';
+import { VoxelBuildModel } from '../models/voxel-build.model';
 
 @Injectable({
   providedIn: 'root'
@@ -23,8 +24,23 @@ export class UserService {
     return this.client.get<UserModel>(`${environment.api}/user/${username}`);
   }
 
-  public getUserSubscribers(username: string): Observable<string[]> {
-    return EMPTY;
+  public getUserSubscriptions(token: string): Observable<UserModel[]> {
+    return this.client.get<UserModel[]>(`${environment.api}/subscriptions`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+  }
+
+  public getUserBuilds(username: string, count: number, page: number) {
+    let url = new URL(`/user/${username}/builds`, environment.api);
+    if (count) {
+      url.searchParams.set('count', `${count}`);
+    }
+    if (page) {
+      url.searchParams.set('page', `${page}`);
+    }
+    return this.client.get<VoxelBuildModel[]>(url.toString());
   }
 
   public getUsersLike(term: string) {

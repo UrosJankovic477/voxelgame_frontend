@@ -4,11 +4,10 @@ import { VoxelBuildModel } from '../../models/voxel-build.model';
 import { VoxelBuildService } from '../../services/voxel-build.service';
 import { UploadService } from '../../services/upload.service';
 import { GameCanvasComponent } from "../game-canvas/game-canvas.component";
-import { EMPTY, filter, map, Observable, switchMap, throwIfEmpty, withLatestFrom } from 'rxjs';
+import { BehaviorSubject, EMPTY, filter, map, Observable, switchMap, throwIfEmpty, withLatestFrom } from 'rxjs';
 import { environment } from '../../../../environment';
 import { CommentWriteComponent } from "../comment-write/comment-write.component";
 import { CommonModule } from '@angular/common';
-import { CommentsComponent } from "../comments/comments.component";
 import { UserModel } from '../../models/user.model';
 import { AppState } from '../../store/app.state';
 import { Store } from '@ngrx/store';
@@ -19,20 +18,22 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { CommentService } from '../../services/comment.service';
 import { SubscribeButtonComponent } from '../subscribe-button/subscribe-button.component';
+import { MatDivider } from "@angular/material/divider";
 
 @Component({
   selector: 'app-post',
   standalone: true,
   imports: [
-    GameCanvasComponent, 
-    CommentWriteComponent, 
+    GameCanvasComponent,
+    CommentWriteComponent,
     SubscribeButtonComponent,
-    CommonModule, 
-    RouterModule, 
+    CommonModule,
+    RouterModule,
     CommentComponent,
     MatButtonModule,
     MatIconModule,
-  ],
+    MatDivider
+],
   templateUrl: './post.component.html',
   styleUrl: './post.component.css'
 })
@@ -56,14 +57,18 @@ export class PostComponent implements OnInit {
       filter(token => token != null),
       throwIfEmpty(() => new Error('no authentication token')),
       switchMap(token => this.voxelBuildService.deleteVoxelBuild(this.uuid!, token!))
-    ).subscribe()
+    ).subscribe();
+    
   }
 
   postComment(content: string) {
     this.token$.pipe(
       filter(token => !!token),
       switchMap(token => this.commentService.postComment(content, this.uuid!, token!))
-    ).subscribe();
+    ).subscribe(() => {
+      this.updateCommentsSubject.next();
+    });
+    
   }
 
   sceneJson?: string;
@@ -72,7 +77,12 @@ export class PostComponent implements OnInit {
   token$: Observable<string | null> = EMPTY;
   user$: Observable<UserModel | null> = EMPTY;
   owns$: Observable<boolean> = EMPTY;
-  comments$: Observable<CommentModel[]> = EMPTY;
+  owns: boolean = false;
+  updateCommentsSubject = new BehaviorSubject<void>(undefined);
+  comments: CommentModel[] = [];
+  commentCount: number = 0;
+  pageSize: number = 10;
+  page: number = 1;
   authorUsername$: Observable<string | null> = EMPTY;
   @ViewChild(GameCanvasComponent) gameCanvas!: GameCanvasComponent; 
   @ViewChild(SubscribeButtonComponent, {
@@ -90,18 +100,35 @@ export class PostComponent implements OnInit {
       filter(voxelBuild => voxelBuild !== null),
       map(voxelBuild => voxelBuild as VoxelBuildModel)
     );
-    this.comments$ = this.voxelBuildService.getVoxelBuildComments(this.uuid).pipe(
-      filter(comments => comments.length > 0)
-      
-    );
-    this.owns$ = this.user$.pipe(
-      withLatestFrom(this.voxelBuild$),
-      map(([user, voxelBuild]) => user != null && voxelBuild.user != null && voxelBuild.user.username == user.username)
+
+    this.updateCommentsSubject.pipe(
+      switchMap(() => this.voxelBuildService.getVoxelBuildComments(this.uuid!, this.pageSize).pipe(
+        filter(({comments, count}) => count > 0),
+      ))
+    ).subscribe(({comments, count}) => {
+      this.comments = comments;
+      this.commentCount = count;
+    });
+    
+    this.owns$ = this.voxelBuild$.pipe(
+      withLatestFrom(this.user$),
+      map(([voxelBuild, user]) => user != null && voxelBuild.user != null && voxelBuild.user.username == user.username)
     );
     this.authorUsername$ = this.voxelBuild$.pipe(
       map(voxelBuild => voxelBuild.user?.username ?? null)
     );
+
+    this.owns$.subscribe(value => {
+      this.owns = value;
+    })
   }
   
+  getMoreComments() {
+    this.page += 1;
+    this.voxelBuildService.getVoxelBuildComments(this.uuid!, this.pageSize, this.page)
+    .subscribe(({comments, count}) => {
+      this.comments.push(...comments);
+    })
+  }
 
 }

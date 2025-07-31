@@ -26,4 +26,13 @@ export class NotificationsService {
       subscribersUsernames,
     });
   }
+
+  deleteNotification(id: number, token: string) {
+    return this.client.delete(`${environment.api}/notification/${id}`, {
+      headers:
+      {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+  }
 }

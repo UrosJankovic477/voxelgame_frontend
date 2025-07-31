@@ -1,14 +1,15 @@
 <div *ngIf="this.voxelBuild$ | async as voxelBuild; else postNotFound">
     <app-game-canvas [viewOnly]="true" [postUuid]="this.uuid"></app-game-canvas>
     <br>
-    <app-subscribe-button *ngIf="!(owns$ | async)" [producerUsername]="voxelBuild.user?.username ?? null"></app-subscribe-button>
+    <app-subscribe-button *ngIf="!owns" [producerUsername]="voxelBuild.user?.username ?? null"></app-subscribe-button>
     <h3>Desctiption</h3>
     <p>{{ voxelBuild.description }}</p>
     <br>
-    <div *ngIf="owns$ | async">
-        <button (click)="this.editPost()" routerLink="/game-canvas">Edit</button>
-        <button (click)="this.deletePost()" mat-icon-button><mat-icon>delete</mat-icon></button>
+    <div *ngIf="owns">
+        <button mat-raised-button (click)="this.editPost()" routerLink="/game-canvas">Edit</button>
+        <button (click)="this.deletePost()" mat-mini-fab style="padding-left: 20;"><mat-icon>delete</mat-icon></button>
     </div>
+    <mat-divider></mat-divider>
     <div>
         <div *ngIf="token$ | async as token; else notLoggedIn">
             <app-comment-write #postCommentBox (saveComment)="postComment($event)"></app-comment-write>
@@ -20,9 +21,13 @@
     </div>
     <br>
     <h3>Comments</h3>
-    <div *ngIf="comments$ | async as comments; else elseBlock">
+    <div *ngIf="commentCount > 0; else elseBlock">
         <div *ngFor="let comment of comments">
-            <app-comment [comment]="comment"></app-comment>
+            <app-comment (updateComments)="updateCommentsSubject.next()" [comment]="comment"></app-comment>
+        </div>
+        <mat-divider></mat-divider>
+        <div *ngIf="commentCount - comments.length > 0">
+            <button mat-flat-button (click)="getMoreComments()"> Load more - {{commentCount - comments.length}}</button>
         </div>
     </div>
     <ng-template #elseBlock>No comments</ng-template>

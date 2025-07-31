@@ -48,8 +48,19 @@ export class VoxelBuildService {
     return this.client.get<VoxelBuildModel | null>(`${environment.api}/voxel-build/${uuid}`);
   }
 
-  public getVoxelBuildComments(uuid: string) {
-    return this.client.get<CommentModel[]>(`${environment.api}/voxel-build/${uuid}/comments`);
+  public getVoxelBuildComments(uuid: string, count: number = 20, page: number = 1) {
+    let url = new URL(`/voxel-build/${uuid}/comments`, environment.api);
+    if (count) {
+      url.searchParams.set('count', `${count}`);
+    }
+    if (page) {
+      url.searchParams.set('page', `${page}`);
+    }
+
+    return this.client.get<{
+      comments: CommentModel[],
+      count: number
+    }>(url.toString());
   }
 
   public deleteVoxelBuild(uuid: string, token: string) {

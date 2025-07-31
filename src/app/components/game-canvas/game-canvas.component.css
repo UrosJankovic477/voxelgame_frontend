@@ -2,3 +2,24 @@ html, body {
     height: 100%;
     margin: 0;
 }
+
+.canvas {
+    border: 10px;
+    border-radius: 5px;
+    border-style: solid;
+    box-shadow: 20px 20px 20px lightgray;
+    border-color: white;
+}
+
+.options {
+    border: 10px;
+    border-radius: 5px;
+    border-style: solid;
+    border-color: white;
+    display: flex; 
+    flex-direction: row; 
+    gap: 20px;
+    background-color: white;
+    box-shadow: 20px 20px 20px lightgray;
+    width: 800px;
+}

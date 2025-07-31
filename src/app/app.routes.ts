@@ -9,6 +9,7 @@ import { userAuthGuard } from './guards/user-auth.guard';
 import { PostFormComponent as PostSaveFormComponent } from './components/post-save-form/post-save-form.component';
 import { PostComponent } from './components/post/post.component';
 import { PostsComponent } from './components/posts/posts.component';
+import { HomePageComponent } from './components/home-page/home-page.component';
 
 export const routes: Routes = [
     {
@@ -45,6 +46,15 @@ export const routes: Routes = [
     {
         path: 'game-canvas',
         component: GameCanvasComponent,
+    },
+    {
+        path: '',
+        redirectTo: '/home-page',
+        pathMatch: 'full'
+    },
+    {
+        path: 'home-page',
+        component: HomePageComponent,
     },
     {
         path: '**',

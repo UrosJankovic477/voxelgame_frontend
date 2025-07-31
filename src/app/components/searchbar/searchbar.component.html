@@ -1,6 +1,6 @@
-<form>
+<form style="display: flex; gap: 10px; align-items: center; flex-direction: row;">
     <button mat-flat-button (click)="search()">Search</button> 
     <mat-form-field>
-        <input matInput [formControl]="searchbar" type="search"/>
+        <input matInput style="margin-top: 16px;" [formControl]="searchbar" type="search"/>
     </mat-form-field>
 </form>

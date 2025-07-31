@@ -5,8 +5,9 @@ import { AppState } from '../../store/app.state';
 import { Store } from '@ngrx/store';
 import { UserModel } from '../../models/user.model';
 import { BehaviorSubject, EMPTY, filter, iif, lastValueFrom, map, Observable, of, switchMap, withLatestFrom } from 'rxjs';
-import { selectLoginToken } from '../../store/auth/auth.selectors';
+import { selectLoginToken, selectLoginUser } from '../../store/auth/auth.selectors';
 import { CommonModule } from '@angular/common';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-subscribe-button',
@@ -18,7 +19,8 @@ import { CommonModule } from '@angular/common';
 export class SubscribeButtonComponent implements OnInit {
   constructor(
     private userService: UserService,
-    private store: Store<AppState>
+    private store: Store<AppState>,
+    private router: Router
   ) {
 
   }
@@ -32,6 +34,16 @@ export class SubscribeButtonComponent implements OnInit {
       withLatestFrom(this.token$),
       switchMap(([_, token]) => this.userService.isSubscribed(this.producerUsername!, token!)),
       map(([value]) => value.exists)
+    );
+
+    this.store.select(selectLoginToken).pipe(
+      map(token => !!token)
+    ).subscribe(value =>
+      this.isLoggedIn = value
+    );
+
+    this.isLoggedInUser$ = this.store.select(selectLoginUser).pipe(
+      map(user => user?.username === this.producerUsername)
     );
 
     this.isSubscribed$.subscribe(value => {
@@ -52,7 +64,9 @@ export class SubscribeButtonComponent implements OnInit {
   }
 
   onClick() {
-    
+    if (!this.isLoggedIn) {
+      this.router.navigate(['/login'])
+    }
     if (this.firstClick) {
       this.firstClick = false;
       this.click.subscribe(() => this.checkSubscriptionSubject.next());
@@ -73,7 +87,11 @@ export class SubscribeButtonComponent implements OnInit {
 
   token$: Observable<string | null> = EMPTY;
 
-  message: 'Follow' | 'Unfollow' | 'N/A' = 'N/A';
+  isLoggedInUser$: Observable<boolean> = EMPTY;
+
+  message: 'Follow' | 'Unfollow' = 'Follow';
+
+  isLoggedIn = false;
 
   private checkSubscriptionSubject = new BehaviorSubject<void>(undefined);
   private onClickSubject = new BehaviorSubject<void>(undefined);

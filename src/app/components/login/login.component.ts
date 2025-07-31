@@ -10,7 +10,7 @@ import { AppState } from '../../store/app.state';
 import { UserModel } from '../../models/user.model';
 import { authReducer } from '../../store/auth/auth.reducer';
 import { selectLoginErrorMessage, selectLoginToken } from '../../store/auth/auth.selectors';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -37,6 +37,7 @@ export class LoginComponent implements OnInit {
   constructor(
     private store: Store<AppState>,
     private formBuilder: FormBuilder,
+    private router: Router
   ) {
 
   }
@@ -73,6 +74,7 @@ export class LoginComponent implements OnInit {
       this.store.dispatch(loginRequest({
         username: this.loginForm.value.username!, password: this.loginForm.value.password!
       }));
+      this.router.navigate(['/']);
     }
     else {
       this.store.dispatch(loginFailure({ errorMessage: 'Type username and password.' }));

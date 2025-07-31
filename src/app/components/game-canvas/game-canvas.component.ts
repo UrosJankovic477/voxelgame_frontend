@@ -11,9 +11,10 @@ import { VoxelBuildService } from '../../services/voxel-build.service';
 import { RouterModule } from '@angular/router';
 import { UploadService } from '../../services/upload.service';
 import { selectLoginToken } from '../../store/auth/auth.selectors';
-import { sceneSavePreview } from '../../store/scene/scene.actions';
+import { sceneReset, sceneSave, sceneSavePreview } from '../../store/scene/scene.actions';
 import { CommonModule } from '@angular/common';
 import { environment } from '../../../../environment';
+import { MatButtonModule } from '@angular/material/button';
 
 
 // refactor: separate render related code from component class
@@ -21,7 +22,12 @@ import { environment } from '../../../../environment';
 @Component({
   selector: 'app-game-canvas',
   standalone: true,
-  imports: [ColorPickerComponent, RouterModule, CommonModule],
+  imports: [
+    ColorPickerComponent, 
+    RouterModule, 
+    CommonModule,
+    MatButtonModule
+  ],
   templateUrl: './game-canvas.component.html',
   styleUrl: './game-canvas.component.css'
 })
@@ -187,9 +193,9 @@ export class GameCanvasComponent implements OnInit, OnChanges {
 
   initRenderer() {
     this.renderer = new Renderer(this.canvas!, this.store, {
-      backgroundColor: 'DeepSkyBlue',
+      backgroundColor: 'aliceblue',
       size: 16,
-      gridColor: 'RosyBrown',
+      gridColor: 'crimson',
       scene: this.scene
     });
     this.renderer.loadScene();
@@ -232,6 +238,11 @@ export class GameCanvasComponent implements OnInit, OnChanges {
       console.error(error);
       
     }
+  }
+
+  resetScene() {
+    this.store.dispatch(sceneReset());
+    this.initRenderer();
   }
 
 }
