@@ -1,22 +1,30 @@
 <div>
   <img [src]="this.previewUrl$ | async"/>
   <form [formGroup]="postForm" (ngSubmit)="onSubmit()">
-      <div>
-          <label for="title">
+    
+      <p>
+        <mat-form-field>
+          <mat-label for="title">
             Title: 
-          </label>
-          <input id="title" type="text" formControlName="title">
-      </div>
+          </mat-label>
   
-      <div>
-          <label for="description">
+          <input matInput id="title" type="text" formControlName="title">
+        </mat-form-field>
+      </p>
+
+      <p>
+        <mat-form-field>
+          <mat-label for="description">
             Description: 
-          </label>
+          </mat-label>
           <br/>
-          <textarea id="description" type="text" formControlName="description"></textarea>
-      </div>
+          <textarea matInput id="description" type="text" formControlName="description"></textarea>
+        </mat-form-field>
+      </p>
+          
+
   
-      <button class="button" type="submit">save</button>
+      <button mat-flat-button class="button" type="submit">save</button>
   
   </form>
 </div>

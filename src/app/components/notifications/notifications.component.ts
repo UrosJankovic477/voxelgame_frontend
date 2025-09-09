@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { NotificationModel } from '../../models/notification.model';
 import { MatListModule } from '@angular/material/list';
 import { MatCardModule } from '@angular/material/card';
@@ -27,13 +27,18 @@ import { MatIconModule } from "@angular/material/icon";
   templateUrl: './notifications.component.html',
   styleUrl: './notifications.component.css'
 })
-export class NotificationsComponent {
+export class NotificationsComponent implements OnChanges {
 
   constructor(
     public environmentService: EnvironmentService,
     private notificationService: NotificationsService
   ) {
 
+  }
+  ngOnChanges(changes: SimpleChanges): void {
+    console.log(changes);
+    
+    this.notifications = changes['notifications'].currentValue;
   }
 
   @Input() notifications: NotificationModel[] = [];

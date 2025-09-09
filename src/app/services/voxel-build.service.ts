@@ -27,6 +27,23 @@ export class VoxelBuildService {
     return this.client.get<VoxelBuildModel[]>(url.toString());
   }
 
+  public putVoxelBuild(voxelBuild: VoxelBuildModel, sceneJson: string, preview: File, token: string) {
+    const formData = new FormData();
+    const postFile = new File([sceneJson], 'post', {
+      type: 'text/plain'
+    });
+    formData.append('voxelBuild', JSON.stringify(voxelBuild))
+    formData.append('post', postFile);
+    formData.append('preview', preview);
+    return this.client.put(`${environment.api}/voxel-build`, formData, {
+      headers:
+      {
+        'Authorization': `Bearer ${token}`
+      },
+      responseType: 'text'
+    });
+  }
+
   public postVoxelBuild(voxelBuild: VoxelBuildModel, sceneJson: string, preview: File, token: string) {
     const formData = new FormData();
     const postFile = new File([sceneJson], 'post', {

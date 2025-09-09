@@ -6,7 +6,7 @@
     <p>{{ voxelBuild.description }}</p>
     <br>
     <div *ngIf="owns">
-        <button mat-raised-button (click)="this.editPost()" routerLink="/game-canvas">Edit</button>
+        <button mat-raised-button (click)="this.editPost()" [routerLink]="'/post-edit/' + this.uuid">Edit</button>
         <button (click)="this.deletePost()" mat-mini-fab style="padding-left: 20;"><mat-icon>delete</mat-icon></button>
     </div>
     <mat-divider></mat-divider>

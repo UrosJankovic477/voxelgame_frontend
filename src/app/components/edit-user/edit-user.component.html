@@ -1,31 +1,33 @@
-<input type="file" class="file-input"
-       (change)="onFileSelected($event)" #fileUpload>
+<div style="width: 50%; margin: auto;">
 
-<div class="file-upload">
-
-   {{this.file?.name || "No file uploaded yet."}}
-
-    <button mat-mini-fab color="primary" class="upload-btn" (click)="fileUpload.click()">
-    </button>
-
+  <h1>Edit User</h1>
+  <mat-divider></mat-divider>
+  <br>
+  <input type="file" class="file-input"
+  (change)="onFileSelected($event)" #fileUpload>
+  
   <form [formGroup]="editUserForm" (ngSubmit)="onSubmit()">
-       <div>
-          <label for="displayname">
-            Display Name: 
-          </label>
-          <input id="displayname" type="text" formControlName="displayname">
-        </div>
-   
-        <div>
-          <label for="about">
-              About:
-          </label>
-          <br/>
-          <textarea placeholder="Write something about yourself" id="about" type="about" formControlName="about"></textarea>
-        </div>
-   
-       <button class="button" type="submit">save changes</button>
-   
-   </form>
-
-</div>
+    <p>
+      <mat-form-field>
+        <mat-label>
+          Display Name: 
+        </mat-label>
+        <input matInput id="displayname" type="text" formControlName="displayname">
+      </mat-form-field>
+    </p>
+    
+    <p>
+      <mat-form-field style="width: 600px;">
+        <mat-label>About:</mat-label>
+        <br/>
+          <textarea matInput placeholder="Write something about yourself" id="about" type="about" formControlName="about"></textarea>
+        </mat-form-field>
+      </p>
+    
+      <button mat-raised-button type="submit">save changes</button>
+      
+    </form>
+    
+    
+  </div>
+    

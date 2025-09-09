@@ -8,6 +8,7 @@ import { AuthService } from "../../services/auth.service";
 import { UserService } from "../../services/user.service";
 import { Store } from "@ngrx/store";
 import { AppState } from "../app.state";
+import { Router } from "@angular/router";
 
 @Injectable()
 export class AuthEffects {
@@ -15,7 +16,8 @@ export class AuthEffects {
         private actions$: Actions,
         private authService: AuthService,
         private userService: UserService,
-        private store: Store<AppState>
+        private store: Store<AppState>,
+        private router: Router
     ) { 
 
     }
@@ -25,10 +27,13 @@ export class AuthEffects {
             ofType(loginRequest),
             switchMap(action => this.authService.login(action.username, action.password).pipe(
                 
-                map(loginResult => loginSuccess(loginResult)),
+                map(loginResult => {
+                    this.router.navigate(['/']);
+                    return loginSuccess(loginResult)
+                }),
                 catchError((error: HttpErrorResponse) => of(loginFailure(
                     { 
-                        errorMessage: error.message
+                        errorMessage: 'Wrong password or username'
                     })))
             )),
             

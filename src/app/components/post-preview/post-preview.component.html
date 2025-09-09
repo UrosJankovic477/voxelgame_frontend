@@ -1,6 +1,6 @@
 <mat-card>
-    <mat-card-header>
-        <img mat-card-image style="width: 300px; height: 200px;" [src]="api + '/' + post.previewPictureLocation"/>
+    <mat-card-header class="card">
+        <img mat-card-image class="image" [src]="api + '/' + post.previewPictureLocation"/>
         <mat-card-title>
             <button mat-flat-button [routerLink]="'/posts/' + post.uuid">
                 {{this.post.title}}

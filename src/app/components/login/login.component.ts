@@ -37,7 +37,6 @@ export class LoginComponent implements OnInit {
   constructor(
     private store: Store<AppState>,
     private formBuilder: FormBuilder,
-    private router: Router
   ) {
 
   }
@@ -74,7 +73,6 @@ export class LoginComponent implements OnInit {
       this.store.dispatch(loginRequest({
         username: this.loginForm.value.username!, password: this.loginForm.value.password!
       }));
-      this.router.navigate(['/']);
     }
     else {
       this.store.dispatch(loginFailure({ errorMessage: 'Type username and password.' }));

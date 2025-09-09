@@ -11,11 +11,23 @@ import { UserService } from '../../services/user.service';
 import { CommonModule } from '@angular/common';
 import { environment } from '../../../../environment';
 import { v6 as uuidV6, stringify as uuidStringify } from 'uuid';
+import { MatButton, MatButtonModule } from '@angular/material/button';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatDivider, MatDividerModule } from '@angular/material/divider';
 
 @Component({
   selector: 'app-edit-user',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule, StoreModule],
+  imports: [
+    ReactiveFormsModule, 
+    CommonModule, 
+    StoreModule,
+    MatButtonModule,
+    MatInputModule,
+    MatFormFieldModule,
+    MatDividerModule,
+  ],
   templateUrl: './edit-user.component.html',
   styleUrl: './edit-user.component.css'
 })

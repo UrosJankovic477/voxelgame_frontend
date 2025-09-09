@@ -10,6 +10,8 @@ import { PostFormComponent as PostSaveFormComponent } from './components/post-sa
 import { PostComponent } from './components/post/post.component';
 import { PostsComponent } from './components/posts/posts.component';
 import { HomePageComponent } from './components/home-page/home-page.component';
+import { PostEditComponent } from './components/post-edit/post-edit.component';
+import { postOwnershipGuard } from './guards/post-ownership.guard';
 
 export const routes: Routes = [
     {
@@ -36,6 +38,11 @@ export const routes: Routes = [
         component: PostSaveFormComponent,
     },
     {
+        path: 'post-save-form/:uuid',
+        canActivate: [userAuthGuard, postOwnershipGuard],
+        component: PostSaveFormComponent,
+    },
+    {
         path: 'login',
         component: LoginComponent,
     },
@@ -46,6 +53,11 @@ export const routes: Routes = [
     {
         path: 'game-canvas',
         component: GameCanvasComponent,
+    },
+    {
+        path: 'post-edit/:uuid',
+        canActivate: [userAuthGuard, postOwnershipGuard],
+        component: PostEditComponent,
     },
     {
         path: '',

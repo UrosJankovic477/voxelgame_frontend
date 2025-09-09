@@ -17,8 +17,6 @@ import { environment } from '../../../../environment';
 import { MatButtonModule } from '@angular/material/button';
 
 
-// refactor: separate render related code from component class
-
 @Component({
   selector: 'app-game-canvas',
   standalone: true,
@@ -41,6 +39,7 @@ export class GameCanvasComponent implements OnInit, OnChanges {
 
   async ngOnChanges(changes: SimpleChanges): Promise<void> {
     const uuid = changes['postUuid'].currentValue;
+    
     if (!uuid) {
       console.warn('No post UUID provided.');
       this.scene = null;
@@ -48,6 +47,9 @@ export class GameCanvasComponent implements OnInit, OnChanges {
     else {
       this.scene = await fetch(`${environment.api}/uploads/posts/${uuid}.json`).then(response => response.text());
     }
+    this.canvas = this.canvas = document.querySelector('#c');
+    this.viewOnly = changes['viewOnly'].currentValue;
+    this.initRenderer();
     this.renderer?.createScene({
       scene: this.scene
     });
@@ -82,28 +84,18 @@ export class GameCanvasComponent implements OnInit, OnChanges {
     this.savePreview();
   }
 
-  ngOnInit(): void {
-    this.canvas = document.querySelector('#c');
-    if (this.canvas === null) {
-      throw new Error('Failed to find WebGL canvas');
-    }
-
-    this.canvas.addEventListener('mousedown', ev => {
-      ev.preventDefault();
-    });
-
-    this.canvas.addEventListener('contextmenu', ev => {
-      ev.preventDefault();
-    });
+  initEvents() {
     this.keydownEvent$ = fromEvent(document, 'keydown') as Observable<KeyboardEvent>;
     this.keyupEvent$ = fromEvent(document, 'keyup') as Observable<KeyboardEvent>;
-    this.mouseEvent$ = fromEvent(this.canvas, 'mousemove') as Observable<MouseEvent>;
+    this.mouseEvent$ = fromEvent(this.canvas!, 'mousemove') as Observable<MouseEvent>;
     this.wheelEvent$ = fromEvent(document, 'wheel') as Observable<WheelEvent>;
-    this.clickEvent$ = fromEvent(this.canvas, 'click') as Observable<MouseEvent>;
+    this.clickEvent$ = fromEvent(this.canvas!, 'click') as Observable<MouseEvent>;
+
     this.clickEvent$.subscribe((ev: MouseEvent) => {
       const boundingRect = this.canvas!.getBoundingClientRect();
       const x = (ev.clientX - boundingRect.x);
       const y = boundingRect.height - (ev.clientY - boundingRect.y);
+
       const collisionData = this.renderer!.testCollision(x, y);
       let intersection = collisionData.intersection;
       if (!collisionData.collision 
@@ -134,17 +126,27 @@ export class GameCanvasComponent implements OnInit, OnChanges {
       }
       
     }); 
+    
     this.mouseEvent$.pipe(
       filter(ev => {
         return (ev.buttons & 4) !== 0; 
       })
     ).subscribe((ev: MouseEvent) => {
+      //if (!this.canvas?.focus) {
+      //  return;
+      //}
       this.renderer?.translateCamera(ev.movementX, -ev.movementY);
     });
 
     this.wheelEvent$.pipe(
       map(ev => -ev.deltaY * 10)
-    ).subscribe(delta => this.renderer?.zoomCamera(delta));
+    ).subscribe(delta => {
+      //if (!this.canvas?.matches(':focus')) {
+      //  return;
+      //}
+      this.renderer?.zoomCamera(delta)
+
+    });
 
     this.keydownEvent$.pipe(
       switchMap(keyDown => {
@@ -187,8 +189,53 @@ export class GameCanvasComponent implements OnInit, OnChanges {
           ])
         );
       }), 
-    ).subscribe(angles => this.renderer?.rotateCamera(angles[0], angles[1]));
+    ).subscribe(angles => {
+      //if (!this.canvas?.matches(':focus')) {
+      //  return;
+      //}
+      this.renderer?.rotateCamera(angles[0], angles[1])
+    });
+  }
+
+  initCanvas() {
+    this.canvas = document.querySelector('#c');
+    if (this.canvas === null) {
+      throw new Error('Failed to find WebGL canvas');
+    }
+
+    document.addEventListener('click', ev => {
+      const boundingRect = this.canvas?.getBoundingClientRect();
+      if (ev.clientX < boundingRect!.left || ev.clientX > boundingRect!.right || ev.clientY > boundingRect!.bottom || ev.clientY < boundingRect!.top) {
+        this.canvas?.blur();
+        
+      }
+      else {
+        this.canvas?.focus();
+      }
+    })
+
+    this.canvas.addEventListener('mousedown', ev => {
+      ev.preventDefault();
+    });
+
+    this.canvas.addEventListener('contextmenu', ev => {
+      ev.preventDefault();
+    });
+
+    this.canvas.addEventListener('wheel', ev => {
+      ev.preventDefault();
+    });
+
+  }
+
+  init() {
+    this.initCanvas();
+    this.initEvents();
     this.initRenderer();
+  }
+
+  ngOnInit(): void {
+    this.init();
   }
 
   initRenderer() {

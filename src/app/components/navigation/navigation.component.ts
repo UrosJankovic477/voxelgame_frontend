@@ -2,7 +2,7 @@ import { Component, ComponentRef, OnInit, ViewChild, ViewContainerRef } from '@a
 import { Store, StoreModule } from '@ngrx/store';
 import { AppState } from '../../store/app.state';
 import { UserModel } from '../../models/user.model';
-import { BehaviorSubject, EMPTY, filter, Observable, switchMap, withLatestFrom } from 'rxjs';
+import { BehaviorSubject, EMPTY, filter, Observable, switchMap, throttle, throttleTime, withLatestFrom } from 'rxjs';
 import { selectLoginToken, selectLoginUser } from '../../store/auth/auth.selectors';
 import { CommonModule } from '@angular/common';
 import { environment } from '../../../../environment';
@@ -68,7 +68,8 @@ export class NavigationComponent implements OnInit {
     this.notifications$ = this.notificationSubject.pipe(
       withLatestFrom(this.token$),
       filter(([_, token]) => !!token),
-      switchMap(([_, token]) => this.notificationService.getNotifications(token!))
+      switchMap(([_, token]) => this.notificationService.getNotifications(token!)),
+      throttleTime(2000)
     );
     this.notifications$.subscribe(([notifications, count]) => {
       this.unreadNotificationCount = count ?? 0;
@@ -76,40 +77,50 @@ export class NavigationComponent implements OnInit {
     });
 
     this.notificationSubject.next();
+
+    this.store.select(state => state.authState).subscribe(() =>
+      this.notificationSubject.next()
+    );
     
   }
 
   
 
   showNotifications() {
+    if (this.notifications.length == 0) {
+      return;
+    }
     this.notificationsComponent = this.viewContainerRef.createComponent(NotificationsComponent, {
 
     });
     this.notificationsComponent.setInput('notifications', this.notifications);
     this.notificationsComponent.instance.onDeleteNotification.subscribe(id => this.deleteNotification(id));
+    this.notificaionsShown = true;
   }
 
   removeNotifications() {
     this.notificationsComponent?.destroy();
+    this.notificaionsShown = false;
   }
 
   toggleNotificationsDisplay() {
     if (this.notificaionsShown) {
       this.removeNotifications();
-      this.notificaionsShown = false;
+      
     }
     else {
       this.showNotifications();
-      this.notificaionsShown = true;
+      
     }
   }
 
   deleteNotification(id: number) {
     this.token$.pipe(
       switchMap(token => this.notificationService.deleteNotification(id, token!))
-    ).subscribe();
-    this.notificationSubject.next();
-    this.notificationsComponent?.setInput('notifications', this.notifications);
+    ).subscribe(() => {
+      this.notificationSubject.next();
+    });
+    this.removeNotifications();
   }
   
 }

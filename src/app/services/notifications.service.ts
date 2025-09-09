@@ -15,7 +15,8 @@ export class NotificationsService {
     return this.client.get<[NotificationModel[], number]>(`${environment.api}/notification`, {
       headers:
       {
-        'Authorization': `Bearer ${token}`
+        'Authorization': `Bearer ${token}`,
+        'Cache-Control': 'no-cache'
       }
     });
   }

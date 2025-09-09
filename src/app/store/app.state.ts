@@ -1,6 +1,7 @@
 import { createReducer } from "@ngrx/store";
 import { UserModel } from "../models/user.model";
 import { authReducer, initialAuthState } from "./auth/auth.reducer";
+import { EntityState } from "@ngrx/entity";
 
 export interface AppState {
     authState: AuthState,

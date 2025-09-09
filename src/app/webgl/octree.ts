@@ -269,8 +269,6 @@ export class Octree {
             return { collision: false };
         }
 
-        console.log(collisionData.intersection);
-        
         
         if (node.state == OctreeNodeState.filled) {
             return collisionData;
